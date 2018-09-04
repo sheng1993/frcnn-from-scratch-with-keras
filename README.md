@@ -3,7 +3,7 @@ I wrote this fork to know FRCNN better, forking from frcnn-keras.
 Thought that RPN should be trained separately, so added that feature.
 
 ## Compared to the forked keras-frcnn..
-1. mobilenetv1 and mobilenetv2 support added (partially).
+1. mobilenetv1 and mobilenetv2(TBD) support added (partially).
 2. VGG19 support added.
 3. RPN can be trained seperately.
 
