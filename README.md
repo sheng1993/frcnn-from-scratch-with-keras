@@ -8,6 +8,13 @@ Thought that RPN should be trained separately, so added that feature.
 3. RPN can be trained seperately.
 
 Note that you must download the imagenet pretrained model prior and place it in the root directory.
+Look at https://github.com/keras-team/keras/tree/master/keras/applications for details.
+e.g. to get VGG16 weights.. place it in pretrain directory.
+
+```
+wget https://github.com/fchollet/deep-learning-models/releases/download/v0.1/vgg16_weights_tf_dim_ordering_tf_kernels.h5
+```
+
 
 # Running scripts..
 
