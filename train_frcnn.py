@@ -10,11 +10,18 @@ import pickle
 from keras import backend as K
 from keras.optimizers import Adam, SGD, RMSprop
 from keras.layers import Input
-from keras.models import Model
+from keras.models import Model, load_model
 from keras_frcnn import config, data_generators
 from keras_frcnn import losses as losses
 import keras_frcnn.roi_helpers as roi_helpers
 from keras.utils import generic_utils
+
+if 'tensorflow' == K.backend():
+    import tensorflow as tf
+from keras.backend.tensorflow_backend import set_session
+config2 = tf.ConfigProto()
+config2.gpu_options.allow_growth = True
+set_session(tf.Session(config=config2))
 
 sys.setrecursionlimit(40000)
 
@@ -29,12 +36,15 @@ parser.add_option("--hf", dest="horizontal_flips", help="Augment with horizontal
 parser.add_option("--vf", dest="vertical_flips", help="Augment with vertical flips in training. (Default=false).", action="store_true", default=False)
 parser.add_option("--rot", "--rot_90", dest="rot_90", help="Augment with 90 degree rotations in training. (Default=false).",
 				  action="store_true", default=False)
-parser.add_option("--num_epochs", type="int", dest="num_epochs", help="Number of epochs.", default=2000)
+parser.add_option("--num_epochs", type="int", dest="num_epochs", help="Number of epochs.", default=200)
 parser.add_option("--config_filename", dest="config_filename", help=
 				"Location to store all the metadata related to the training (to be used when testing).",
 				default="config.pickle")
 parser.add_option("--output_weight_path", dest="output_weight_path", help="Output path for weights.", default='./model_frcnn.hdf5')
 parser.add_option("--input_weight_path", dest="input_weight_path", help="Input path for weights. If not specified, will try to load default weights provided by keras.")
+parser.add_option("--rpn", dest="rpn_weight_path", help="Input path for rpn.")
+parser.add_option("--opt", dest="optimizers", help="set the optimizer to use", default="Adam")
+parser.add_option("--elen", dest="epoch_length", help="set the epoch length. def=1000", default=1000)
 
 (options, args) = parser.parse_args()
 
@@ -58,16 +68,25 @@ C.rot_90 = bool(options.rot_90)
 C.model_path = options.output_weight_path
 C.num_rois = int(options.num_rois)
 
+# we will use resnet. may change to others
 if options.network == 'vgg':
-	C.network = 'vgg'
+	C.network = 'vgg16'
 	from keras_frcnn import vgg as nn
 elif options.network == 'resnet50':
 	from keras_frcnn import resnet as nn
 	C.network = 'resnet50'
+elif options.network == 'vgg19':
+	from keras_frcnn import vgg19 as nn
+	C.network = 'vgg19'
+elif options.network == 'mobilenetv1':
+	from keras_frcnn import mobilenetv1 as nn
+	C.network = 'mobilenetv1'
+elif options.network == 'mobilenetv2':
+	from keras_frcnn import mobilenetv2 as nn
+	C.network = 'mobilenetv2'
 else:
 	print('Not a valid model')
 	raise ValueError
-
 
 # check if weight path was passed via command line
 if options.input_weight_path:
@@ -141,13 +160,26 @@ except:
 	print('Could not load pretrained model weights. Weights can be found in the keras application folder \
 		https://github.com/fchollet/keras/tree/master/keras/applications')
 
-optimizer = Adam(lr=1e-5)
-optimizer_classifier = Adam(lr=1e-5)
+if options.optimizers == "SGD":
+    optimizer = SGD(lr=1e-3, decay=0.0005, momentum=0.9)
+    optimizer_classifier = SGD(lr=1e-3, decay=0.0005, momentum=0.9)
+else:
+    optimizer = Adam(lr=1e-5, clipnorm=0.001)
+    optimizer_classifier = Adam(lr=1e-5, clipnorm=0.001)
 model_rpn.compile(optimizer=optimizer, loss=[losses.rpn_loss_cls(num_anchors), losses.rpn_loss_regr(num_anchors)])
 model_classifier.compile(optimizer=optimizer_classifier, loss=[losses.class_loss_cls, losses.class_loss_regr(len(classes_count)-1)], metrics={'dense_class_{}'.format(len(classes_count)): 'accuracy'})
 model_all.compile(optimizer='sgd', loss='mae')
 
-epoch_length = 1000
+# may use this to resume from rpn models
+try:
+    print("loading previous rpn model..")
+    model_rpn = model_rpn.load_weights(options.rpn_weight_path)
+    print("loading previous frcnn model..")
+    model_all = model_all.load_weights(options.input_weight_path)
+except:
+    print("no previous model was loaded")
+
+epoch_length = int(options.epoch_length)
 num_epochs = int(options.num_epochs)
 iter_num = 0
 
