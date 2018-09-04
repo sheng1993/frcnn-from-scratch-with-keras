@@ -87,6 +87,12 @@ elif options.network == 'vgg19':
 elif options.network == 'mobilenetv1':
 	from keras_frcnn import mobilenetv1 as nn
 	C.network = 'mobilenetv1'
+elif options.network == 'mobilenetv1_05':
+	from keras_frcnn import mobilenetv1_05 as nn
+	C.network = 'mobilenetv1_05'
+elif options.network == 'mobilenetv1_25':
+	from keras_frcnn import mobilenetv1_25 as nn
+	C.network = 'mobilenetv1_25'
 elif options.network == 'mobilenetv2':
 	from keras_frcnn import mobilenetv2 as nn
 	C.network = 'mobilenetv2'
@@ -206,10 +212,14 @@ vis = True
 #R = roi_helpers.rpn_to_roi(P_rpn[0], P_rpn[1], C, K.image_dim_ordering(), use_regr=True, overlap_thresh=0.7, max_boxes=300)
 ## note: calc_iou converts from (x1,y1,x2,y2) to (x,y,w,h) format
 #X2, Y1, Y2, IouS = roi_helpers.calc_iou(R, img_data, C, class_mapping)
-Callbacks=keras.callbacks.ModelCheckpoint("./models/"+options.network+".weights.{epoch:02d}-{val_loss:.2f}.hdf5", monitor='val_loss', verbose=1, save_best_only=False, save_weights_only=True, mode='auto', period=4)
+Callbacks=keras.callbacks.ModelCheckpoint("./models/rpn/rpn."+options.network+".weights.{epoch:02d}-{val_loss:.2f}.hdf5", monitor='val_loss', verbose=1, save_best_only=False, save_weights_only=True, mode='auto', period=4)
 callback=[Callbacks]
 history = model_rpn.fit_generator(data_gen_train,
-                    epochs=20, validation_data=data_gen_val,
-                    steps_per_epoch=100,callbacks=callback, validation_steps=10)
+                    epochs=options.num_epochs, validation_data=data_gen_val,
+                    steps_per_epoch=1000,callbacks=callback, validation_steps=10)
 
-model_rpn.save_weights(options.network+".weights.rpnonly.h5")
+loss_history = history.history["val_loss"]
+
+import numpy
+numpy_loss_history = numpy.array(loss_history)
+numpy.savetxt(options.network+"_rpn_loss_history.txt", numpy_loss_history, delimiter=",")
