@@ -43,5 +43,32 @@ Epoch 4/20
 
 ```
 python train_.frcnn.py --network mobilenetv1 -o simple -p /path/to/your/dataset/
+
+Using TensorFlow backend.
+Parsing annotation files
+Training images per class:
+{'Car': 1357, 'Cyclist': 182, 'Pedestrian': 5, 'bg': 0}
+Num classes (including bg) = 4
+Config has been written to config.pickle, and can be loaded when testing to ensure correct results
+Num train samples 401
+Num val samples 88
+loading weights from ./pretrain/mobilenet_1_0_224_tf.h5
+loading previous rpn model..
+no previous model was loaded
+Starting training
+Epoch 1/200
+100/100 [==============================] - 150s 2s/step - rpn_cls: 4.5333 - rpn_regr: 0.4783 - detector_cls: 1.2654 - detector_regr: 0.1691  
+Mean number of bounding boxes from RPN overlapping ground truth boxes: 1.74
+Classifier accuracy for bounding boxes from RPN: 0.935625
+Loss RPN classifier: 4.244322432279587
+Loss RPN regression: 0.4736669697239995
+Loss Detector classifier: 1.1491613787412644
+Loss Detector regression: 0.20629869312047958
+Elapsed time: 150.15273475646973
+Total loss decreased from inf to 6.07344947386533, saving weights
+Epoch 2/200
+Average number of overlapping bounding boxes from RPN = 1.74 for 100 previous iterations
+ 38/100 [==========>...................] - ETA: 1:24 - rpn_cls: 3.2813 - rpn_regr: 0.4576 - detector_cls: 0.8776 - detector_regr: 0.1826
+
 ```
 
