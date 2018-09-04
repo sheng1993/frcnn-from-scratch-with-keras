@@ -2,6 +2,11 @@
 """MobileNetv1 model for Keras.
 
 """
+# -*- coding: utf-8 -*-
+"""VGG16 model for Keras.
+# Reference
+- [Very Deep Convolutional Networks for Large-Scale Image Recognition](https://arxiv.org/abs/1409.1556)
+"""
 from __future__ import print_function
 from __future__ import absolute_import
 from __future__ import division
@@ -21,10 +26,10 @@ from keras_frcnn.FixedBatchNormalization import FixedBatchNormalization
 
 def get_weight_path():
     if K.image_dim_ordering() == 'th':
-        print('no model for therano')
+        print('pretrained weights not available for VGG with theano backend')
         return
     else:
-        return './pretrain/mobilenet_1_0_224_tf.h5' # change at will!
+        return './pretrain/mobilenet_1_0_224_tf.h5'
 
 
 def get_img_output_length(width, height):
@@ -124,118 +129,17 @@ def classifier_layers(x, input_shape, trainable=False):
     # seem to require timedistributed layers.. whats that???
     # it may be for 5-dim inputs.
     
-    x = conv_block_td(x, 3, [512, 512, 2048], stage=5, block='a', input_shape=input_shape, strides=(1, 1), trainable=trainable)
+    x = _conv_block_td(inputs=x, filters=512, input_shape=input_shape, strides=(1, 1), trainable=trainable)
 
-    x = identity_block_td(x, 3, [512, 512, 2048], stage=5, block='b', trainable=trainable)
+    x = _depthwise_conv_block_td(x, 512, alpha=1, depth_multiplier=1, block_id=12)
+    x = _depthwise_conv_block_td(x, 1024, alpha=1, depth_multiplier=1, block_id=13)
+    x = _depthwise_conv_block_td(x, 1024, alpha=1, depth_multiplier=1, block_id=14)
 #    x = identity_block_td(x, 3, [512, 512, 2048], stage=5, block='c', trainable=trainable)
     x = TimeDistributed(layers.AveragePooling2D((7, 7)), name='avg_pool')(x)
 
     return x
 
-def identity_block_td(input_tensor, kernel_size, filters, stage, block, trainable=True):
-
-    # identity block time distributed
-
-    nb_filter1, nb_filter2, nb_filter3 = filters
-    if K.image_dim_ordering() == 'tf':
-        bn_axis = 3
-    else:
-        bn_axis = 1
-
-    conv_name_base = 'res' + str(stage) + block + '_branch'
-    bn_name_base = 'bn' + str(stage) + block + '_branch'
-
-    x = TimeDistributed(layers.Convolution2D(nb_filter1, (1, 1), trainable=trainable, kernel_initializer='normal'), name=conv_name_base + '2a')(input_tensor)
-    x = TimeDistributed(FixedBatchNormalization(axis=bn_axis), name=bn_name_base + '2a')(x)
-    x = layers.Activation('relu')(x)
-
-    x = TimeDistributed(layers.Convolution2D(nb_filter2, (kernel_size, kernel_size), trainable=trainable, kernel_initializer='normal',padding='same'), name=conv_name_base + '2b')(x)
-    x = TimeDistributed(FixedBatchNormalization(axis=bn_axis), name=bn_name_base + '2b')(x)
-    x = layers.Activation('relu')(x)
-
-    x = TimeDistributed(layers.Convolution2D(nb_filter3, (1, 1), trainable=trainable, kernel_initializer='normal'), name=conv_name_base + '2c')(x)
-    x = TimeDistributed(FixedBatchNormalization(axis=bn_axis), name=bn_name_base + '2c')(x)
-
-    x = Add()([x, input_tensor])
-    x = layers.Activation('relu')(x)
-
-    return x
-def conv_block_td(input_tensor, kernel_size, filters, stage, block, input_shape, strides=(2, 2), trainable=True):
-
-    # conv block time distributed
-
-    nb_filter1, nb_filter2, nb_filter3 = filters
-    if K.image_dim_ordering() == 'tf':
-        bn_axis = 3
-    else:
-        bn_axis = 1
-
-    conv_name_base = 'res' + str(stage) + block + '_branch'
-    bn_name_base = 'bn' + str(stage) + block + '_branch'
-
-    x = TimeDistributed(layers.Convolution2D(nb_filter1, (1, 1), strides=strides, trainable=trainable, kernel_initializer='normal'), input_shape=input_shape, name=conv_name_base + '2a')(input_tensor)
-    x = TimeDistributed(FixedBatchNormalization(axis=bn_axis), name=bn_name_base + '2a')(x)
-    x = layers.Activation('relu')(x)
-
-    x = TimeDistributed(layers.Convolution2D(nb_filter2, (kernel_size, kernel_size), padding='same', trainable=trainable, kernel_initializer='normal'), name=conv_name_base + '2b')(x)
-    x = TimeDistributed(FixedBatchNormalization(axis=bn_axis), name=bn_name_base + '2b')(x)
-    x = layers.Activation('relu')(x)
-
-    x = TimeDistributed(layers.Convolution2D(nb_filter3, (1, 1), kernel_initializer='normal'), name=conv_name_base + '2c', trainable=trainable)(x)
-    x = TimeDistributed(FixedBatchNormalization(axis=bn_axis), name=bn_name_base + '2c')(x)
-
-    shortcut = TimeDistributed(layers.Convolution2D(nb_filter3, (1, 1), strides=strides, trainable=trainable, kernel_initializer='normal'), name=conv_name_base + '1')(input_tensor)
-    shortcut = TimeDistributed(FixedBatchNormalization(axis=bn_axis), name=bn_name_base + '1')(shortcut)
-
-    x = Add()([x, shortcut])
-    x = layers.Activation('relu')(x)
-    return x
-
 def _conv_block(inputs, filters, alpha, kernel=(3, 3), strides=(1, 1)):
-    """Adds an initial convolution layer (with batch normalization and relu6).
-    # Arguments
-        inputs: Input tensor of shape `(rows, cols, 3)`
-            (with `channels_last` data format) or
-            (3, rows, cols) (with `channels_first` data format).
-            It should have exactly 3 inputs channels,
-            and width and height should be no smaller than 32.
-            E.g. `(224, 224, 3)` would be one valid value.
-        filters: Integer, the dimensionality of the output space
-            (i.e. the number of output filters in the convolution).
-        alpha: controls the width of the network.
-            - If `alpha` < 1.0, proportionally decreases the number
-                of filters in each layer.
-            - If `alpha` > 1.0, proportionally increases the number
-                of filters in each layer.
-            - If `alpha` = 1, default number of filters from the paper
-                 are used at each layer.
-        kernel: An integer or tuple/list of 2 integers, specifying the
-            width and height of the 2D convolution window.
-            Can be a single integer to specify the same value for
-            all spatial dimensions.
-        strides: An integer or tuple/list of 2 integers,
-            specifying the strides of the convolution
-            along the width and height.
-            Can be a single integer to specify the same value for
-            all spatial dimensions.
-            Specifying any stride value != 1 is incompatible with specifying
-            any `dilation_rate` value != 1.
-    # Input shape
-        4D tensor with shape:
-        `(samples, channels, rows, cols)` if data_format='channels_first'
-        or 4D tensor with shape:
-        `(samples, rows, cols, channels)` if data_format='channels_last'.
-    # Output shape
-        4D tensor with shape:
-        `(samples, filters, new_rows, new_cols)`
-        if data_format='channels_first'
-        or 4D tensor with shape:
-        `(samples, new_rows, new_cols, filters)`
-        if data_format='channels_last'.
-        `rows` and `cols` values might have changed due to stride.
-    # Returns
-        Output tensor of block.
-    """
     channel_axis = 3 #if backend.image_data_format() == 'channels_first' else -1
     filters = int(filters * alpha)
     x = layers.ZeroPadding2D(padding=((0, 1), (0, 1)), name='conv1_pad')(inputs)
@@ -247,6 +151,11 @@ def _conv_block(inputs, filters, alpha, kernel=(3, 3), strides=(1, 1)):
     x = layers.BatchNormalization(axis=channel_axis, name='conv1_bn')(x)
     return layers.ReLU(6., name='conv1_relu')(x)
 
+def _conv_block_td(inputs, filters, input_shape, kernel=(3, 3), strides=(1, 1), trainable=True):
+    channel_axis = 3 #if backend.image_data_format() == 'channels_first' else -1
+    x = TimeDistributed(layers.Conv2D(filters, kernel, padding='same', use_bias=False, strides=strides, input_shape=input_shape), name='conv1_td')(inputs)
+    x = TimeDistributed(layers.BatchNormalization(axis=channel_axis), name='conv1_bn_td')(x)
+    return layers.ReLU(6., name='conv1_relu_td')(x)
 
 def _depthwise_conv_block(inputs, pointwise_conv_filters, alpha,
                           depth_multiplier=1, strides=(1, 1), block_id=1):
@@ -322,3 +231,33 @@ def _depthwise_conv_block(inputs, pointwise_conv_filters, alpha,
     x = layers.BatchNormalization(axis=channel_axis,
                                   name='conv_pw_%d_bn' % block_id)(x)
     return layers.ReLU(6., name='conv_pw_%d_relu' % block_id)(x)
+
+def _depthwise_conv_block_td(inputs, pointwise_conv_filters, alpha, depth_multiplier=1, strides=(1, 1), block_id=1):
+
+    channel_axis = 3
+    pointwise_conv_filters = int(pointwise_conv_filters * alpha)
+
+    if strides == (1, 1):
+        x = inputs
+    else:
+        x = layers.ZeroPadding2D(((0, 1), (0, 1)),
+                                 name='conv_pad_%d' % block_id)(inputs)
+    x = TimeDistributed(layers.DepthwiseConv2D((3, 3),
+                               padding='same' if strides == (1, 1) else 'valid',
+                               depth_multiplier=depth_multiplier,
+                               strides=strides,
+                               use_bias=False
+                               ),name='conv_dw_td_%d' % block_id)(x)
+    x = TimeDistributed(layers.BatchNormalization(
+        axis=channel_axis), name='conv_dw_td_%d_bn' % block_id)(x)
+    x = layers.ReLU(6., name='conv_dw_td_%d_relu' % block_id)(x)
+
+    x = TimeDistributed(layers.Conv2D(pointwise_conv_filters, (1, 1),
+                      padding='same',
+                      use_bias=False,
+                      strides=(1, 1)),
+                      name='conv_pw_td_%d' % block_id)(x)
+    x = TimeDistributed(layers.BatchNormalization(axis=channel_axis),
+                                  name='conv_pw_rd_%d_bn' % block_id)(x)
+    return layers.ReLU(6., name='conv_pw_td_%d_relu' % block_id)(x)
+
