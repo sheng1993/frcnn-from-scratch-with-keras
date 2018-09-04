@@ -1,7 +1,6 @@
 # -*- coding: utf-8 -*-
-"""VGG16 model for Keras.
-# Reference
-- [Very Deep Convolutional Networks for Large-Scale Image Recognition](https://arxiv.org/abs/1409.1556)
+"""MobileNetv1 model for Keras.
+
 """
 from __future__ import print_function
 from __future__ import absolute_import
@@ -18,23 +17,21 @@ from keras.utils import layer_utils
 from keras.utils.data_utils import get_file
 from keras import backend as K
 from keras_frcnn.RoiPoolingConv import RoiPoolingConv
-
+from keras_frcnn.FixedBatchNormalization import FixedBatchNormalization
 
 def get_weight_path():
     if K.image_dim_ordering() == 'th':
-        print('pretrained weights not available for VGG with theano backend')
+        print('no model for therano')
         return
     else:
-        return './pretrain/mobilenet_1_0_224_tf.h5'
+        return './pretrain/mobilenet_1_0_224_tf.h5' # change at will!
 
 
 def get_img_output_length(width, height):
     def get_output_length(input_length):
-        return input_length//32 #number of strides == 5
+        return input_length//16 # there is 4 strides.
 
     return get_output_length(width), get_output_length(height)    
-
-
 
 def nn_base(input_tensor=None, trainable=False):
 
@@ -61,6 +58,9 @@ def nn_base(input_tensor=None, trainable=False):
     # for testing..
     alpha = 1
     depth_multiplier = 1
+    
+    # need this layer to pass the input image size
+    x = layers.ZeroPadding2D((3, 3))(img_input)
 
     x = _conv_block(img_input, 32, alpha, strides=(2, 2))
     x = _depthwise_conv_block(x, 64, alpha, depth_multiplier, block_id=1)
@@ -81,9 +81,7 @@ def nn_base(input_tensor=None, trainable=False):
     x = _depthwise_conv_block(x, 512, alpha, depth_multiplier, block_id=10)
     x = _depthwise_conv_block(x, 512, alpha, depth_multiplier, block_id=11)
 
-    x = _depthwise_conv_block(x, 1024, alpha, depth_multiplier,
-                              strides=(2, 2), block_id=12)
-    x = _depthwise_conv_block(x, 1024, alpha, depth_multiplier, block_id=13)
+
 
     return x
 
@@ -109,19 +107,89 @@ def classifier(base_layers, input_rois, num_rois, nb_classes = 21, trainable=Fal
         input_shape = (num_rois,512,7,7)
 
     out_roi_pool = RoiPoolingConv(pooling_regions, num_rois)([base_layers, input_rois])
-
-    out = TimeDistributed(Flatten(name='flatten'))(out_roi_pool)
-    out = TimeDistributed(Dense(4096, activation='relu', name='fc1'))(out)
-    out = TimeDistributed(Dropout(0.5))(out)
-    out = TimeDistributed(Dense(4096, activation='relu', name='fc2'))(out)
-    out = TimeDistributed(Dropout(0.5))(out)
-
+  
+    # final blocks
+    out = classifier_layers(out_roi_pool, input_shape=input_shape, trainable=True)
+    out = TimeDistributed(Flatten())(out)
+    # outputs
     out_class = TimeDistributed(Dense(nb_classes, activation='softmax', kernel_initializer='zero'), name='dense_class_{}'.format(nb_classes))(out)
     # note: no regression target for bg class
     out_regr = TimeDistributed(Dense(4 * (nb_classes-1), activation='linear', kernel_initializer='zero'), name='dense_regress_{}'.format(nb_classes))(out)
-
+    
     return [out_class, out_regr]
 
+    
+def classifier_layers(x, input_shape, trainable=False):
+
+    # seem to require timedistributed layers.. whats that???
+    # it may be for 5-dim inputs.
+    
+    x = conv_block_td(x, 3, [512, 512, 2048], stage=5, block='a', input_shape=input_shape, strides=(1, 1), trainable=trainable)
+
+    x = identity_block_td(x, 3, [512, 512, 2048], stage=5, block='b', trainable=trainable)
+#    x = identity_block_td(x, 3, [512, 512, 2048], stage=5, block='c', trainable=trainable)
+    x = TimeDistributed(layers.AveragePooling2D((7, 7)), name='avg_pool')(x)
+
+    return x
+
+def identity_block_td(input_tensor, kernel_size, filters, stage, block, trainable=True):
+
+    # identity block time distributed
+
+    nb_filter1, nb_filter2, nb_filter3 = filters
+    if K.image_dim_ordering() == 'tf':
+        bn_axis = 3
+    else:
+        bn_axis = 1
+
+    conv_name_base = 'res' + str(stage) + block + '_branch'
+    bn_name_base = 'bn' + str(stage) + block + '_branch'
+
+    x = TimeDistributed(layers.Convolution2D(nb_filter1, (1, 1), trainable=trainable, kernel_initializer='normal'), name=conv_name_base + '2a')(input_tensor)
+    x = TimeDistributed(FixedBatchNormalization(axis=bn_axis), name=bn_name_base + '2a')(x)
+    x = layers.Activation('relu')(x)
+
+    x = TimeDistributed(layers.Convolution2D(nb_filter2, (kernel_size, kernel_size), trainable=trainable, kernel_initializer='normal',padding='same'), name=conv_name_base + '2b')(x)
+    x = TimeDistributed(FixedBatchNormalization(axis=bn_axis), name=bn_name_base + '2b')(x)
+    x = layers.Activation('relu')(x)
+
+    x = TimeDistributed(layers.Convolution2D(nb_filter3, (1, 1), trainable=trainable, kernel_initializer='normal'), name=conv_name_base + '2c')(x)
+    x = TimeDistributed(FixedBatchNormalization(axis=bn_axis), name=bn_name_base + '2c')(x)
+
+    x = Add()([x, input_tensor])
+    x = layers.Activation('relu')(x)
+
+    return x
+def conv_block_td(input_tensor, kernel_size, filters, stage, block, input_shape, strides=(2, 2), trainable=True):
+
+    # conv block time distributed
+
+    nb_filter1, nb_filter2, nb_filter3 = filters
+    if K.image_dim_ordering() == 'tf':
+        bn_axis = 3
+    else:
+        bn_axis = 1
+
+    conv_name_base = 'res' + str(stage) + block + '_branch'
+    bn_name_base = 'bn' + str(stage) + block + '_branch'
+
+    x = TimeDistributed(layers.Convolution2D(nb_filter1, (1, 1), strides=strides, trainable=trainable, kernel_initializer='normal'), input_shape=input_shape, name=conv_name_base + '2a')(input_tensor)
+    x = TimeDistributed(FixedBatchNormalization(axis=bn_axis), name=bn_name_base + '2a')(x)
+    x = layers.Activation('relu')(x)
+
+    x = TimeDistributed(layers.Convolution2D(nb_filter2, (kernel_size, kernel_size), padding='same', trainable=trainable, kernel_initializer='normal'), name=conv_name_base + '2b')(x)
+    x = TimeDistributed(FixedBatchNormalization(axis=bn_axis), name=bn_name_base + '2b')(x)
+    x = layers.Activation('relu')(x)
+
+    x = TimeDistributed(layers.Convolution2D(nb_filter3, (1, 1), kernel_initializer='normal'), name=conv_name_base + '2c', trainable=trainable)(x)
+    x = TimeDistributed(FixedBatchNormalization(axis=bn_axis), name=bn_name_base + '2c')(x)
+
+    shortcut = TimeDistributed(layers.Convolution2D(nb_filter3, (1, 1), strides=strides, trainable=trainable, kernel_initializer='normal'), name=conv_name_base + '1')(input_tensor)
+    shortcut = TimeDistributed(FixedBatchNormalization(axis=bn_axis), name=bn_name_base + '1')(shortcut)
+
+    x = Add()([x, shortcut])
+    x = layers.Activation('relu')(x)
+    return x
 
 def _conv_block(inputs, filters, alpha, kernel=(3, 3), strides=(1, 1)):
     """Adds an initial convolution layer (with batch normalization and relu6).
