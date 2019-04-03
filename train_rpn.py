@@ -208,10 +208,13 @@ vis = True
 ##loss_rpn = model_rpn.train_on_batch(X, Y)
 #P_rpn = model_rpn.predict_on_batch(X)
 
-# NMS
-#R = roi_helpers.rpn_to_roi(P_rpn[0], P_rpn[1], C, K.image_dim_ordering(), use_regr=True, overlap_thresh=0.7, max_boxes=300)
-## note: calc_iou converts from (x1,y1,x2,y2) to (x,y,w,h) format
-#X2, Y1, Y2, IouS = roi_helpers.calc_iou(R, img_data, C, class_mapping)
+# you should enable NMS when you visualize your results.
+# NMS will filter out redundant predictions rpn gives, and will only leave the "best" predictions.
+# P_rpn = model_rpn.predict_on_batch(image)
+# R = roi_helpers.rpn_to_roi(P_rpn[0], P_rpn[1], C, K.image_dim_ordering(), use_regr=True, overlap_thresh=0.7, max_boxes=300)
+# X2, Y1, Y2, IouS = roi_helpers.calc_iou(R, img_data, C, class_mapping)
+# this will output the binding box axis. [x1,x2,y1,y2].
+
 Callbacks=keras.callbacks.ModelCheckpoint("./models/rpn/rpn."+options.network+".weights.{epoch:02d}-{val_loss:.2f}.hdf5", monitor='val_loss', verbose=1, save_best_only=False, save_weights_only=True, mode='auto', period=4)
 callback=[Callbacks]
 history = model_rpn.fit_generator(data_gen_train,
