@@ -15,7 +15,7 @@ from keras.optimizers import Adam, SGD, RMSprop
 from keras.layers import Input
 from keras.models import Model
 from keras_frcnn import data_generators
-from keras_frcnn import config_anc9 as config
+from keras_frcnn import config
 from keras_frcnn import losses as losses
 import keras_frcnn.roi_helpers as roi_helpers
 from keras.utils import generic_utils
