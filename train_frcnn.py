@@ -49,14 +49,13 @@ parser.add_option("--elen", dest="epoch_length", help="set the epoch length. def
 (options, args) = parser.parse_args()
 
 if not options.train_path:   # if filename is not given
-	parser.error('Error: path to training data must be specified. Pass --path to command line')
-
+    parser.error('Error: path to training data must be specified. Pass --path to command line')
 if options.parser == 'pascal_voc':
-	from keras_frcnn.pascal_voc_parser import get_data
+    from keras_frcnn.pascal_voc_parser import get_data
 elif options.parser == 'simple':
-	from keras_frcnn.simple_parser import get_data
+    from keras_frcnn.simple_parser import get_data
 else:
-	raise ValueError("Command line option parser must be one of 'pascal_voc' or 'simple'")
+    raise ValueError("Command line option parser must be one of 'pascal_voc' or 'simple'")
 
 # pass the settings from the command line, and persist them in the config object
 C = config.Config()
@@ -70,36 +69,36 @@ C.num_rois = int(options.num_rois)
 
 # we will use resnet. may change to others
 if options.network == 'vgg':
-	C.network = 'vgg16'
-	from keras_frcnn import vgg as nn
+    C.network = 'vgg16'
+    from keras_frcnn import vgg as nn
 elif options.network == 'resnet50':
-	from keras_frcnn import resnet as nn
-	C.network = 'resnet50'
+    from keras_frcnn import resnet as nn
+    C.network = 'resnet50'
 elif options.network == 'vgg19':
-	from keras_frcnn import vgg19 as nn
-	C.network = 'vgg19'
+    from keras_frcnn import vgg19 as nn
+    C.network = 'vgg19'
 elif options.network == 'mobilenetv1':
-	from keras_frcnn import mobilenetv1 as nn
-	C.network = 'mobilenetv1'
+    from keras_frcnn import mobilenetv1 as nn
+    C.network = 'mobilenetv1'
 elif options.network == 'mobilenetv2':
-	from keras_frcnn import mobilenetv2 as nn
-	C.network = 'mobilenetv2'
+    from keras_frcnn import mobilenetv2 as nn
+    C.network = 'mobilenetv2'
 else:
-	print('Not a valid model')
-	raise ValueError
+    print('Not a valid model')
+    raise ValueError
 
 # check if weight path was passed via command line
 if options.input_weight_path:
-	C.base_net_weights = options.input_weight_path
+    C.base_net_weights = options.input_weight_path
 else:
-	# set the path to weights based on backend and model
-	C.base_net_weights = nn.get_weight_path()
+    # set the path to weights based on backend and model
+    C.base_net_weights = nn.get_weight_path()
 
 all_imgs, classes_count, class_mapping = get_data(options.train_path)
 
 if 'bg' not in classes_count:
-	classes_count['bg'] = 0
-	class_mapping['bg'] = len(class_mapping)
+    classes_count['bg'] = 0
+    class_mapping['bg'] = len(class_mapping)
 
 C.class_mapping = class_mapping
 
@@ -112,8 +111,8 @@ print('Num classes (including bg) = {}'.format(len(classes_count)))
 config_output_filename = options.config_filename
 
 with open(config_output_filename, 'wb') as config_f:
-	pickle.dump(C,config_f)
-	print('Config has been written to {}, and can be loaded when testing to ensure correct results'.format(config_output_filename))
+    pickle.dump(C,config_f)
+    print('Config has been written to {}, and can be loaded when testing to ensure correct results'.format(config_output_filename))
 
 random.shuffle(all_imgs)
 
@@ -130,9 +129,9 @@ data_gen_train = data_generators.get_anchor_gt(train_imgs, classes_count, C, nn.
 data_gen_val = data_generators.get_anchor_gt(val_imgs, classes_count, C, nn.get_img_output_length,K.image_dim_ordering(), mode='val')
 
 if K.image_dim_ordering() == 'th':
-	input_shape_img = (3, None, None)
+    input_shape_img = (3, None, None)
 else:
-	input_shape_img = (None, None, 3)
+    input_shape_img = (None, None, 3)
 
 img_input = Input(shape=input_shape_img)
 roi_input = Input(shape=(None, 4))
@@ -153,11 +152,11 @@ model_classifier = Model([img_input, roi_input], classifier)
 model_all = Model([img_input, roi_input], rpn[:2] + classifier)
 
 try:
-	print('loading weights from {}'.format(C.base_net_weights))
-	model_rpn.load_weights(C.base_net_weights, by_name=True)
-	model_classifier.load_weights(C.base_net_weights, by_name=True)
+    print('loading weights from {}'.format(C.base_net_weights))
+    model_rpn.load_weights(C.base_net_weights, by_name=True)
+    model_classifier.load_weights(C.base_net_weights, by_name=True)
 except:
-	print('Could not load pretrained model weights. Weights can be found in the keras application folder \
+    print('Could not load pretrained model weights. Weights can be found in the keras application folder \
 		https://github.com/fchollet/keras/tree/master/keras/applications')
 
 if options.optimizers == "SGD":
@@ -196,20 +195,16 @@ print('Starting training')
 vis = True
 
 for epoch_num in range(num_epochs):
-
 	progbar = generic_utils.Progbar(epoch_length)
 	print('Epoch {}/{}'.format(epoch_num + 1, num_epochs))
-
 	while True:
 		try:
-
 			if len(rpn_accuracy_rpn_monitor) == epoch_length and C.verbose:
-				mean_overlapping_bboxes = float(sum(rpn_accuracy_rpn_monitor))/len(rpn_accuracy_rpn_monitor)
-				rpn_accuracy_rpn_monitor = []
-				print('Average number of overlapping bounding boxes from RPN = {} for {} previous iterations'.format(mean_overlapping_bboxes, epoch_length))
-				if mean_overlapping_bboxes == 0:
-					print('RPN is not producing bounding boxes that overlap the ground truth boxes. Check RPN settings or keep training.')
-
+			    mean_overlapping_bboxes = float(sum(rpn_accuracy_rpn_monitor))/len(rpn_accuracy_rpn_monitor)
+			    rpn_accuracy_rpn_monitor = []
+			    print('Average number of overlapping bounding boxes from RPN = {} for {} previous iterations'.format(mean_overlapping_bboxes, epoch_length))
+			    if mean_overlapping_bboxes == 0:
+				print('RPN is not producing bounding boxes that overlap the ground truth boxes. Check RPN settings or keep training.')
 			X, Y, img_data = next(data_gen_train)
 
 			loss_rpn = model_rpn.train_on_batch(X, Y)
@@ -221,45 +216,45 @@ for epoch_num in range(num_epochs):
 			X2, Y1, Y2, IouS = roi_helpers.calc_iou(R, img_data, C, class_mapping)
 
 			if X2 is None:
-				rpn_accuracy_rpn_monitor.append(0)
-				rpn_accuracy_for_epoch.append(0)
-				continue
+			    rpn_accuracy_rpn_monitor.append(0)
+			    rpn_accuracy_for_epoch.append(0)
+			    continue
 
 			neg_samples = np.where(Y1[0, :, -1] == 1)
 			pos_samples = np.where(Y1[0, :, -1] == 0)
 
 			if len(neg_samples) > 0:
-				neg_samples = neg_samples[0]
+			    neg_samples = neg_samples[0]
 			else:
-				neg_samples = []
+			    neg_samples = []
 
 			if len(pos_samples) > 0:
-				pos_samples = pos_samples[0]
+			    pos_samples = pos_samples[0]
 			else:
-				pos_samples = []
+			    pos_samples = []
 			
 			rpn_accuracy_rpn_monitor.append(len(pos_samples))
 			rpn_accuracy_for_epoch.append((len(pos_samples)))
 
 			if C.num_rois > 1:
-				if len(pos_samples) < C.num_rois//2:
-					selected_pos_samples = pos_samples.tolist()
-				else:
-					selected_pos_samples = np.random.choice(pos_samples, C.num_rois//2, replace=False).tolist()
-				try:
-					selected_neg_samples = np.random.choice(neg_samples, C.num_rois - len(selected_pos_samples), replace=False).tolist()
-				except:
-					selected_neg_samples = np.random.choice(neg_samples, C.num_rois - len(selected_pos_samples), replace=True).tolist()
-
-				sel_samples = selected_pos_samples + selected_neg_samples
-			else:
-				# in the extreme case where num_rois = 1, we pick a random pos or neg sample
+			    if len(pos_samples) < C.num_rois//2:
 				selected_pos_samples = pos_samples.tolist()
-				selected_neg_samples = neg_samples.tolist()
-				if np.random.randint(0, 2):
-					sel_samples = random.choice(neg_samples)
-				else:
-					sel_samples = random.choice(pos_samples)
+			    else:
+					selected_pos_samples = np.random.choice(pos_samples, C.num_rois//2, replace=False).tolist()
+			    try:
+				selected_neg_samples = np.random.choice(neg_samples, C.num_rois - len(selected_pos_samples), replace=False).tolist()
+			    except:
+				selected_neg_samples = np.random.choice(neg_samples, C.num_rois - len(selected_pos_samples), replace=True).tolist()
+
+			    sel_samples = selected_pos_samples + selected_neg_samples
+			else:
+			    # in the extreme case where num_rois = 1, we pick a random pos or neg sample
+			    selected_pos_samples = pos_samples.tolist()
+			    selected_neg_samples = neg_samples.tolist()
+			    if np.random.randint(0, 2):
+				sel_samples = random.choice(neg_samples)
+			    else:
+				sel_samples = random.choice(pos_samples)
 
 			loss_class = model_classifier.train_on_batch([X, X2[:, sel_samples, :]], [Y1[:, sel_samples, :], Y2[:, sel_samples, :]])
 
