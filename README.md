@@ -1,13 +1,13 @@
 # What is this repo?
-- Simple faster-RCNN codes in Keras!
+- **Simple faster-RCNN codes in Keras!
 
-- RPN (region proposal layer) can be trained separately!
+- **RPN (region proposal layer) can be trained separately!
 
-- Active support! :)
+- **Active support! :)
 
-- MobileNet support!
+- **MobileNet support!
 
-- VGG support!
+- **VGG support!
 
 
 ## Compared to the forked keras-frcnn..
