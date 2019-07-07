@@ -7,26 +7,47 @@ Thought that RPN should be trained separately, so added that feature.
 2. VGG19 support added.
 3. RPN can be trained seperately.
 
-Note that you must download the imagenet pretrained model prior and place it in the root directory.
-
-Look at https://github.com/keras-team/keras/tree/master/keras/applications for details.
-
-e.g. to get VGG16 weights.. place it in pretrain directory.
-
-```
-wget https://github.com/fchollet/deep-learning-models/releases/download/v0.1/vgg16_weights_tf_dim_ordering_tf_kernels.h5
-```
 
 
 # Running scripts..
 
-## 1. lets train region proposal network first, rather than training the whole network.
+## 1. clone the repo
+
+``` 
+git clone https://github.com/kentaroy47/frcnn-from-scratch-with-keras.git
+cd frcnn-from-scratch-with-keras
+```
+
+## 2. Download pretrained weights.
+Using imagenet pretrained VGG16 weights will significantly speed up training.
+
+Download and place it in the root directory.
+
+You can choose other base models as well.
+
+```
+# for VGG16
+wget https://github.com/fchollet/deep-learning-models/releases/download/v0.1/vgg16_weights_tf_dim_ordering_tf_kernels.h5
+
+# for mobilenetv1
+wget https://github.com/fchollet/deep-learning-models/releases/download/v0.6/mobilenet_1_0_224_tf.h5
+
+# for resnet 50
+wget https://github.com/fchollet/deep-learning-models/releases/download/v0.1/resnet50_weights_tf_dim_ordering_tf_kernels.h5
+```
+
+Other tensorflow pretrained models are in bellow.
+
+https://github.com/fchollet/deep-learning-models/releases/
+
+
+## 3. lets train region proposal network first, rather than training the whole network.
 Training the entire faster-rcnn is quite difficult, but RPN itself can be more handy!
 
 You can see if the loss converges.. etc
 
 ```
-python train_rpn.py --network mobilenetv1 -o simple -p /path/to/your/dataset/
+python train_rpn.py --network vgg16 -o simple -p /path/to/your/dataset/
 
 Epoch 1/20
 100/100 [==============================] - 57s 574ms/step - loss: 5.2831 - rpn_out_class_loss: 4.8526 - rpn_out_regress_loss: 0.4305 - val_loss: 4.2840 - val_rpn_out_class_loss: 3.8344 - val_rpn_out_regress_loss: 0.4496
@@ -39,10 +60,10 @@ Epoch 4/20
 
 ```
 
-## 2. then train the whole Faster-RCNN network!
+## 4. then train the whole Faster-RCNN network!
 
 ```
-python train_.frcnn.py --network mobilenetv1 -o simple -p /path/to/your/dataset/
+python train_.frcnn.py --network vgg16 -o simple -p /path/to/your/dataset/
 
 Using TensorFlow backend.
 Parsing annotation files
