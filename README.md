@@ -25,6 +25,11 @@ git clone https://github.com/kentaroy47/frcnn-from-scratch-with-keras.git
 cd frcnn-from-scratch-with-keras
 ```
 
+Install requirements. make sure that you have Keras installed.
+```
+pip install -r requirements.txt
+```
+
 ## 2. Download pretrained weights.
 Using imagenet pretrained VGG16 weights will significantly speed up training.
 
