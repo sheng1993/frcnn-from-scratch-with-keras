@@ -1,12 +1,19 @@
-# FRCNN from scratch
-I wrote this fork to know FRCNN better, forking from frcnn-keras.
-Thought that RPN should be trained separately, so added that feature.
+# What is this repo?
+- Simple faster-RCNN codes!
+
+- RPN (region proposal layer) can be trained separately!
+
+- Active support! :)
+
+- MobileNet support!
+
+- VGG support!
+
 
 ## Compared to the forked keras-frcnn..
 1. mobilenetv1 and mobilenetv2(TBD) support added (partially). Can also try Mobilenetv1_05,Mobilenetv1_25 for smaller nets.
 2. VGG19 support added.
 3. RPN can be trained seperately.
-
 
 
 # Running scripts..
