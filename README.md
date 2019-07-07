@@ -1,5 +1,5 @@
 # What is this repo?
-- Simple faster-RCNN codes!
+- Simple faster-RCNN codes in Keras!
 
 - RPN (region proposal layer) can be trained separately!
 
