@@ -68,7 +68,7 @@ C.model_path = options.output_weight_path
 C.num_rois = int(options.num_rois)
 
 # we will use resnet. may change to others
-if options.network == 'vgg':
+if options.network == 'vgg' or options.network == 'vgg16':
     C.network = 'vgg16'
     from keras_frcnn import vgg as nn
 elif options.network == 'resnet50':
