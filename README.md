@@ -59,6 +59,8 @@ Training the entire faster-rcnn is quite difficult, but RPN itself can be more h
 
 You can see if the loss converges.. etc
 
+Other network options are: resnet50, mobilenetv1, vgg19.
+
 ```
 python train_rpn.py --network vgg16 -o simple -p /path/to/your/dataset/
 
