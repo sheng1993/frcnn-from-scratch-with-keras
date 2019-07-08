@@ -105,3 +105,20 @@ Average number of overlapping bounding boxes from RPN = 1.74 for 100 previous it
 
 ```
 
+# Dataset setup.
+You can either try voc or simple parsers for your dataset.
+
+simple parsers are much easier, while you train your network as:
+
+```
+python train_rpn.py --network vgg16 -o simple -p ./dataset.txt
+```
+
+Simply provide a text file, with each line containing:
+```
+filepath,x1,y1,x2,y2,class_name
+```
+For example:
+```dataset.txt
+/data/imgs/img_001.jpg,837,346,981,456,cow /data/imgs/img_002.jpg,215,312,279,391,cat
+```
