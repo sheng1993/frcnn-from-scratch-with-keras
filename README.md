@@ -78,7 +78,7 @@ Epoch 4/20
 ## 4. then train the whole Faster-RCNN network!
 
 ```
-python train_.frcnn.py --network vgg16 -o simple -p /path/to/your/dataset/
+python train_frcnn.py --network vgg16 -o simple -p /path/to/your/dataset/
 
 Using TensorFlow backend.
 Parsing annotation files
