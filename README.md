@@ -135,3 +135,12 @@ or Labellmg
 
 https://github.com/tzutalin/labelImg
 
+## to set up VOC2007 training..
+download dataset.
+
+```
+wget http://pjreddie.com/media/files/VOCtrainval_06-Nov-2007.tar
+```
+
+
+
