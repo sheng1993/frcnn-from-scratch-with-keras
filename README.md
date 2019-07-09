@@ -9,7 +9,7 @@
 
 - **VGG support!**
 
-Stars and forks are appreciated if this repo helps your project :)
+Stars and forks are appreciated if this repo helps your project, will motivate me to support this repo. Thanks :)
 
 ## Compared to the forked keras-frcnn..
 1. mobilenetv1 and mobilenetv2(TBD) support added (partially). Can also try Mobilenetv1_05,Mobilenetv1_25 for smaller nets.
@@ -39,6 +39,10 @@ Download and place it in the root directory.
 You can choose other base models as well.
 
 ```
+# place weights in pretrain dir.
+mkdir pretrain & mv pretrain
+
+# download models you would like to use.
 # for VGG16
 wget https://github.com/fchollet/deep-learning-models/releases/download/v0.1/vgg16_weights_tf_dim_ordering_tf_kernels.h5
 
@@ -140,6 +144,51 @@ download dataset.
 
 ```
 wget http://pjreddie.com/media/files/VOCtrainval_06-Nov-2007.tar
+tar -xf VOCtrainval_06-Nov-2007.tar
+
+# run training
+python train_frcnn.py --network mobilenetv1 -p ./VOCdevkit
+
+Using TensorFlow backend.
+data path: ['VOCdevkit/VOC2007']
+Parsing annotation files
+[Errno 2] No such file or directory: 'VOCdevkit/VOC2007/ImageSets/Main/test.txt'
+Training images per class:
+{'aeroplane': 331,
+ 'bg': 0,
+ 'bicycle': 418,
+ 'bird': 599,
+ 'boat': 398,
+ 'bottle': 634,
+ 'bus': 272,
+ 'car': 1644,
+ 'cat': 389,
+ 'chair': 1432,
+ 'cow': 356,
+ 'diningtable': 310,
+ 'dog': 538,
+ 'horse': 406,
+ 'motorbike': 390,
+ 'person': 5447,
+ 'pottedplant': 625,
+ 'sheep': 353,
+ 'sofa': 425,
+ 'train': 328,
+ 'tvmonitor': 367}
+Num classes (including bg) = 21
+Config has been written to config.pickle, and can be loaded when testing to ensure correct results
+Num train samples 5011
+Num val samples 0
+Instructions for updating:
+Colocations handled automatically by placer.
+loading weights from ./pretrain/mobilenet_1_0_224_tf.h5
+loading previous rpn model..
+no previous model was loaded
+Starting training
+Epoch 1/200
+Instructions for updating:
+Use tf.cast instead.
+  23/1000 [..............................] - ETA: 43:30 - rpn_cls: 7.3691 - rpn_regr: 0.1865 - detector_cls: 3.0206 - detector_regr: 0.3050 
 ```
 
 
