@@ -9,7 +9,7 @@
 
 - **VGG support!**
 
-Stars and forks are appreciated if this repo helps your project :)
+Stars and forks are appreciated if this repo helps your project, will motivate me to support this repo. Thanks :)
 
 ## Compared to the forked keras-frcnn..
 1. mobilenetv1 and mobilenetv2(TBD) support added (partially). Can also try Mobilenetv1_05,Mobilenetv1_25 for smaller nets.
