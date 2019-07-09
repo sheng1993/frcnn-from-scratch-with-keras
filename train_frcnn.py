@@ -204,7 +204,7 @@ for epoch_num in range(num_epochs):
 			    rpn_accuracy_rpn_monitor = []
 			    print('Average number of overlapping bounding boxes from RPN = {} for {} previous iterations'.format(mean_overlapping_bboxes, epoch_length))
 			    if mean_overlapping_bboxes == 0:
-				print('RPN is not producing bounding boxes that overlap the ground truth boxes. Check RPN settings or keep training.')
+			      print('RPN is not producing bounding boxes that overlap the ground truth boxes. Check RPN settings or keep training.')
 			X, Y, img_data = next(data_gen_train)
 
 			loss_rpn = model_rpn.train_on_batch(X, Y)
@@ -238,23 +238,22 @@ for epoch_num in range(num_epochs):
 
 			if C.num_rois > 1:
 			    if len(pos_samples) < C.num_rois//2:
-				selected_pos_samples = pos_samples.tolist()
+                                selected_pos_samples = pos_samples.tolist()
 			    else:
-					selected_pos_samples = np.random.choice(pos_samples, C.num_rois//2, replace=False).tolist()
+                                selected_pos_samples = np.random.choice(pos_samples, C.num_rois//2, replace=False).tolist()
 			    try:
-				selected_neg_samples = np.random.choice(neg_samples, C.num_rois - len(selected_pos_samples), replace=False).tolist()
+                                selected_neg_samples = np.random.choice(neg_samples, C.num_rois - len(selected_pos_samples), replace=False).tolist()
 			    except:
-				selected_neg_samples = np.random.choice(neg_samples, C.num_rois - len(selected_pos_samples), replace=True).tolist()
-
+                                selected_neg_samples = np.random.choice(neg_samples, C.num_rois - len(selected_pos_samples), replace=True).tolist()
 			    sel_samples = selected_pos_samples + selected_neg_samples
 			else:
 			    # in the extreme case where num_rois = 1, we pick a random pos or neg sample
 			    selected_pos_samples = pos_samples.tolist()
 			    selected_neg_samples = neg_samples.tolist()
 			    if np.random.randint(0, 2):
-				sel_samples = random.choice(neg_samples)
+                                sel_samples = random.choice(neg_samples)
 			    else:
-				sel_samples = random.choice(pos_samples)
+                                sel_samples = random.choice(pos_samples)
 
 			loss_class = model_classifier.train_on_batch([X, X2[:, sel_samples, :]], [Y1[:, sel_samples, :], Y2[:, sel_samples, :]])
 
