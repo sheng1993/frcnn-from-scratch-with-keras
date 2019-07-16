@@ -23,6 +23,7 @@ parser.add_option("--config_filename", dest="config_filename", help=
 				"Location to read the metadata related to the training (generated when training).",
 				default="config.pickle")
 parser.add_option("--network", dest="network", help="Base network to use. Supports vgg or resnet50.", default='resnet50')
+parser.add_option("--write", dest="write", help="to write out the image with detections or not.", action='store_true')
 
 (options, args) = parser.parse_args()
 
@@ -35,10 +36,31 @@ config_output_filename = options.config_filename
 with open(config_output_filename, 'rb') as f_in:
 	C = pickle.load(f_in)
 
-if C.network == 'resnet50':
-	import keras_frcnn.resnet as nn
-elif C.network == 'vgg':
-	import keras_frcnn.vgg as nn
+# we will use resnet. may change to vgg
+if options.network == 'vgg':
+	C.network = 'vgg16'
+	from keras_frcnn import vgg as nn
+elif options.network == 'resnet50':
+	from keras_frcnn import resnet as nn
+	C.network = 'resnet50'
+elif options.network == 'vgg19':
+	from keras_frcnn import vgg19 as nn
+	C.network = 'vgg19'
+elif options.network == 'mobilenetv1':
+	from keras_frcnn import mobilenetv1 as nn
+	C.network = 'mobilenetv1'
+elif options.network == 'mobilenetv1_05':
+	from keras_frcnn import mobilenetv1_05 as nn
+	C.network = 'mobilenetv1_05'
+elif options.network == 'mobilenetv1_25':
+	from keras_frcnn import mobilenetv1_25 as nn
+	C.network = 'mobilenetv1_25'
+elif options.network == 'mobilenetv2':
+	from keras_frcnn import mobilenetv2 as nn
+	C.network = 'mobilenetv2'
+else:
+	print('Not a valid model')
+	raise ValueError
 
 # turn off any data augmentation at test time
 C.use_horizontal_flips = False
@@ -103,7 +125,9 @@ C.num_rois = int(options.num_rois)
 
 if C.network == 'resnet50':
 	num_features = 1024
-elif C.network == 'vgg':
+else:
+	# may need to fix this up with your backbone..!
+	print("backbone is not resnet50. number of features chosen is 512")
 	num_features = 512
 
 if K.image_dim_ordering() == 'th':
@@ -244,4 +268,5 @@ for idx, img_name in enumerate(sorted(os.listdir(img_path))):
 	print(all_dets)
 	cv2.imshow('img', img)
 	cv2.waitKey(0)
-	# cv2.imwrite('./results_imgs/{}.png'.format(idx),img)
+	if options.write:
+		cv2.imwrite('./results_imgs/{}.png'.format(idx),img)
