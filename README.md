@@ -112,6 +112,15 @@ Average number of overlapping bounding boxes from RPN = 1.74 for 100 previous it
 
 ```
 
+## 5. test your models
+right now, mAP is not calculated and just detections are supplied (inference).
+plz wait for mAP calculation.
+
+```
+python test_frcnn.py --network vgg16 -p /path/to/your/dataset/ --write
+# enabling write will write out images with detections.
+```
+
 # Dataset setup.
 You can either try voc or simple parsers for your dataset.
 
