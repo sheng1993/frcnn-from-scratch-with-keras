@@ -9,7 +9,11 @@
 
 - **VGG support!**
 
-Stars and forks are appreciated if this repo helps your project, will motivate me to support this repo. Thanks :)
+Stars and forks are appreciated if this repo helps your project, will motivate me to support this repo. 
+
+PR and issues will help too!
+
+Thanks :)
 
 ## Compared to the forked keras-frcnn..
 1. mobilenetv1 and mobilenetv2(TBD) support added (partially). Can also try Mobilenetv1_05,Mobilenetv1_25 for smaller nets.
@@ -117,7 +121,7 @@ right now, mAP is not calculated and just detections are supplied (inference).
 plz wait for mAP calculation.
 
 ```
-python test_frcnn.py --network vgg16 -p /path/to/your/dataset/ --write
+python test_frcnn.py --network vgg16 -p /path/to/your/test-dataset/ --write
 # enabling write will write out images with detections.
 ```
 
