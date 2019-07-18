@@ -148,18 +148,27 @@ You can do labeling with tools like Labelme.
 
 https://github.com/wkentaro/labelme
 
+you can directly output VOC-like dataset from your labeled results.
+
+look at the example below.
+
+https://github.com/wkentaro/labelme/tree/master/examples/bbox_detection
+
 or Labellmg
 
 https://github.com/tzutalin/labelImg
 
-## to set up VOC2007 training..
-download dataset.
+# Example.. to set up VOC2007 training..
+download dataset and extract.
 
 ```
 wget http://pjreddie.com/media/files/VOCtrainval_06-Nov-2007.tar
 tar -xf VOCtrainval_06-Nov-2007.tar
+```
 
-# run training
+then run training
+
+```
 python train_frcnn.py --network mobilenetv1 -p ./VOCdevkit
 
 Using TensorFlow backend.
