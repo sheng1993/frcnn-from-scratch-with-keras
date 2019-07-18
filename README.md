@@ -152,7 +152,7 @@ you can directly output VOC-like dataset from your labeled results.
 
 look at the example below.
 
-https://github.com/wkentaro/labelme/tree/master/examples/bbox_detection
+https://github.com/kentaroy47/labelme-voc-format/tree/master/examples
 
 There are other tools like Labellmg too, if interested.
 
