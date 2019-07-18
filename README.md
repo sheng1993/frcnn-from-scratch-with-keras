@@ -144,7 +144,7 @@ For example:
 ```
 
 ## Labeling tools.
-You can do labeling with tools like Labelme.
+You can do labeling with tools. I highly recommend Labelme, which is easy to use.
 
 https://github.com/wkentaro/labelme
 
@@ -154,7 +154,7 @@ look at the example below.
 
 https://github.com/wkentaro/labelme/tree/master/examples/bbox_detection
 
-or Labellmg
+There are other tools like Labellmg too, if interested.
 
 https://github.com/tzutalin/labelImg
 
