@@ -24,7 +24,7 @@ parser.add_option("--config_filename", dest="config_filename", help=
 				default="config.pickle")
 parser.add_option("--network", dest="network", help="Base network to use. Supports vgg or resnet50.", default='resnet50')
 parser.add_option("--write", dest="write", help="to write out the image with detections or not.", action='store_true')
-
+parser.add_option("--load", dest="load", help="specify model path.", default=None)
 (options, args) = parser.parse_args()
 
 if not options.test_path:   # if filename is not given
@@ -156,9 +156,16 @@ model_classifier_only = Model([feature_map_input, roi_input], classifier)
 
 model_classifier = Model([feature_map_input, roi_input], classifier)
 
-print('Loading weights from {}'.format(C.model_path))
-model_rpn.load_weights(C.model_path, by_name=True)
-model_classifier.load_weights(C.model_path, by_name=True)
+# model loading
+if options.load == None:
+  print('Loading weights from {}'.format(C.model_path))
+  model_rpn.load_weights(C.model_path, by_name=True)
+  model_classifier.load_weights(C.model_path, by_name=True)
+else:
+  print('Loading weights from {}'.format(options.load))
+  model_rpn.load_weights(options.load, by_name=True)
+  model_classifier.load_weights(options.load, by_name=True)
+
 
 model_rpn.compile(optimizer='sgd', loss='mse')
 model_classifier.compile(optimizer='sgd', loss='mse')
@@ -266,7 +273,11 @@ for idx, img_name in enumerate(sorted(os.listdir(img_path))):
 
 	print('Elapsed time = {}'.format(time.time() - st))
 	print(all_dets)
-	cv2.imshow('img', img)
-	cv2.waitKey(0)
+        # enable if you want to show pics
+	#cv2.imshow('img', img)
+	#cv2.waitKey(0)
 	if options.write:
-		cv2.imwrite('./results_imgs/{}.png'.format(idx),img)
+           import os
+           if not os.path.isdir("results"):
+              os.mkdir("results")
+           cv2.imwrite('./results/{}.png'.format(idx),img)
