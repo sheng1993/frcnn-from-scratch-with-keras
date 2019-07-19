@@ -121,7 +121,8 @@ right now, mAP is not calculated and just detections are supplied (inference).
 plz wait for mAP calculation.
 
 ```
-python test_frcnn.py --network vgg16 -p /path/to/your/test-dataset/ --write
+python test_frcnn.py --network vgg16 -p /path/to/your/test-dataset/ --load path-to-your-trained-model --write
+# specify your trained model path.
 # enabling write will write out images with detections.
 ```
 
