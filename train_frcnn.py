@@ -41,8 +41,8 @@ parser.add_option("--config_filename", dest="config_filename", help=
 				"Location to store all the metadata related to the training (to be used when testing).",
 				default="config.pickle")
 parser.add_option("--output_weight_path", dest="output_weight_path", help="Output path for weights.", default='./model_frcnn.hdf5')
-parser.add_option("--input_weight_path", dest="input_weight_path", help="Input path for weights. If not specified, will try to load default weights provided by keras.")
-parser.add_option("--rpn", dest="rpn_weight_path", help="Input path for rpn.")
+parser.add_option("--input_weight_path", dest="input_weight_path", help="Input path for weights. If not specified, will try to load default weights provided by keras.", default=None)
+parser.add_option("--rpn", dest="rpn_weight_path", help="Input path for rpn.", default=None)
 parser.add_option("--opt", dest="optimizers", help="set the optimizer to use", default="SGD")
 parser.add_option("--elen", dest="epoch_length", help="set the epoch length. def=1000", default=1000)
 parser.add_option("--load", dest="load", help="What model to load", default=None)
@@ -166,11 +166,14 @@ else:
     optimizer = Adam(lr=1e-5, clipnorm=0.001)
     optimizer_classifier = Adam(lr=1e-5, clipnorm=0.001)
 
-# may use this to resume from rpn models
+# may use this to resume from rpn models or previous training
 if options.load is not None:
     print("loading previous model from ", options.load)
     model_rpn.load_weights(options.load, by_name=True)
     model_classifier.load_weights(options.load, by_name=True)
+elif options.rpn is not None:
+    print("loading RPN weights from ", options.rpn)
+    model_rpn.load_weights(options.rpn, by_name=True)
 else:
     print("no previous model was loaded")
 
