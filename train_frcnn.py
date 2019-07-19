@@ -151,6 +151,7 @@ model_classifier = Model([img_input, roi_input], classifier)
 # this is a model that holds both the RPN and the classifier, used to load/save weights for the models
 model_all = Model([img_input, roi_input], rpn[:2] + classifier)
 
+# load pretrained weights
 try:
     print('loading weights from {}'.format(C.base_net_weights))
     model_rpn.load_weights(C.base_net_weights, by_name=True)
@@ -159,6 +160,7 @@ except:
     print('Could not load pretrained model weights. Weights can be found in the keras application folder \
 		https://github.com/fchollet/keras/tree/master/keras/applications')
 
+# optimizer setup
 if options.optimizers == "SGD":
     optimizer = SGD(lr=1e-3, decay=0.0005, momentum=0.9)
     optimizer_classifier = SGD(lr=1e-3, decay=0.0005, momentum=0.9)
@@ -166,17 +168,18 @@ else:
     optimizer = Adam(lr=1e-5, clipnorm=0.001)
     optimizer_classifier = Adam(lr=1e-5, clipnorm=0.001)
 
-# may use this to resume from rpn models or previous training
+# may use this to resume from rpn models or previous training. specify either rpn or frcnn model to load
 if options.load is not None:
     print("loading previous model from ", options.load)
     model_rpn.load_weights(options.load, by_name=True)
     model_classifier.load_weights(options.load, by_name=True)
-elif options.rpn is not None:
-    print("loading RPN weights from ", options.rpn)
-    model_rpn.load_weights(options.rpn, by_name=True)
+elif options.rpn_weight_path is not None:
+    print("loading RPN weights from ", options.rpn_weight_path)
+    model_rpn.load_weights(options.rpn_weight_path, by_name=True)
 else:
     print("no previous model was loaded")
 
+# compile the model AFTER loading weights!
 model_rpn.compile(optimizer=optimizer, loss=[losses.rpn_loss_cls(num_anchors), losses.rpn_loss_regr(num_anchors)])
 model_classifier.compile(optimizer=optimizer_classifier, loss=[losses.class_loss_cls, losses.class_loss_regr(len(classes_count)-1)], metrics={'dense_class_{}'.format(len(classes_count)): 'accuracy'})
 model_all.compile(optimizer='sgd', loss='mae')
