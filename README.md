@@ -88,6 +88,9 @@ Epoch 4/20
 ```
 python train_frcnn.py --network vgg16 -o simple -p /path/to/your/dataset/
 
+# add --load yourmodelpath if you want to resume training.
+python train_frcnn.py --network vgg16 -o simple -p /path/to/your/dataset/ --load model_frcnn.hdf5
+
 Using TensorFlow backend.
 Parsing annotation files
 Training images per class:
