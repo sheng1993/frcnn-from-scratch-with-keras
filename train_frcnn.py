@@ -45,7 +45,7 @@ parser.add_option("--input_weight_path", dest="input_weight_path", help="Input p
 parser.add_option("--rpn", dest="rpn_weight_path", help="Input path for rpn.")
 parser.add_option("--opt", dest="optimizers", help="set the optimizer to use", default="SGD")
 parser.add_option("--elen", dest="epoch_length", help="set the epoch length. def=1000", default=1000)
-
+parser.add_option("--load", dest="load", help="What model to load", default=None)
 (options, args) = parser.parse_args()
 
 if not options.train_path:   # if filename is not given
@@ -165,18 +165,18 @@ if options.optimizers == "SGD":
 else:
     optimizer = Adam(lr=1e-5, clipnorm=0.001)
     optimizer_classifier = Adam(lr=1e-5, clipnorm=0.001)
+
+# may use this to resume from rpn models
+if options.load is not None:
+    print("loading previous model from ", options.load)
+    model_rpn.load_weights(options.load, by_name=True)
+    model_classifier.load_weights(options.load, by_name=True)
+else:
+    print("no previous model was loaded")
+
 model_rpn.compile(optimizer=optimizer, loss=[losses.rpn_loss_cls(num_anchors), losses.rpn_loss_regr(num_anchors)])
 model_classifier.compile(optimizer=optimizer_classifier, loss=[losses.class_loss_cls, losses.class_loss_regr(len(classes_count)-1)], metrics={'dense_class_{}'.format(len(classes_count)): 'accuracy'})
 model_all.compile(optimizer='sgd', loss='mae')
-
-# may use this to resume from rpn models
-try:
-    print("loading previous rpn model..")
-    model_rpn = model_rpn.load_weights(options.rpn_weight_path)
-    print("loading previous frcnn model..")
-    model_all = model_all.load_weights(options.input_weight_path)
-except:
-    print("no previous model was loaded")
 
 epoch_length = int(options.epoch_length)
 num_epochs = int(options.num_epochs)
