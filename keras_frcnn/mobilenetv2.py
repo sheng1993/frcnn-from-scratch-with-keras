@@ -26,7 +26,8 @@ def get_weight_path():
         print('pretrained weights not available')
         return
     else:
-        return './pretrain/mobilenet_2_0_224_tf.h5'
+        # path to the weights you want to use.
+        return './pretrain/mobilenet_v2_weights_tf_dim_ordering_tf_kernels_1.0_224.h5'
 
 def _make_divisible(v, divisor, min_value=None):
     if min_value is None:
