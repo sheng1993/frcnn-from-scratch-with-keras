@@ -53,6 +53,9 @@ wget https://github.com/fchollet/deep-learning-models/releases/download/v0.1/vgg
 # for mobilenetv1
 wget https://github.com/fchollet/deep-learning-models/releases/download/v0.6/mobilenet_1_0_224_tf.h5
 
+# for mobilenetv2
+wget https://github.com/JonathanCMitchell/mobilenet_v2_keras/releases/download/v1.1/mobilenet_v2_weights_tf_dim_ordering_tf_kernels_1.0_224.h5
+
 # for resnet 50
 wget https://github.com/fchollet/deep-learning-models/releases/download/v0.1/resnet50_weights_tf_dim_ordering_tf_kernels.h5
 ```
