@@ -223,13 +223,18 @@ vis = True
 # X2, Y1, Y2, IouS = roi_helpers.calc_iou(R, img_data, C, class_mapping)
 # this will output the binding box axis. [x1,x2,y1,y2].
 
-Callbacks=keras.callbacks.ModelCheckpoint("./models/rpn/rpn."+options.network+".weights.{epoch:02d}-{val_loss:.2f}.hdf5", monitor='val_loss', verbose=1, save_best_only=False, save_weights_only=True, mode='auto', period=4)
+Callbacks=keras.callbacks.ModelCheckpoint("./models/rpn/rpn."+options.network+".weights.{epoch:02d}-{loss:.2f}.hdf5", monitor='loss', verbose=1, save_best_only=True, save_weights_only=True, mode='auto', period=4)
 callback=[Callbacks]
-history = model_rpn.fit_generator(data_gen_train,
+if options.parser == 'pascal_voc':
+    # assuming you don't have validation data
+    history = model_rpn.fit_generator(data_gen_train,
+                    epochs=options.num_epochs,steps_per_epoch=1000,callbacks=callback)
+    loss_history = history.history["loss"]
+else:
+    history = model_rpn.fit_generator(data_gen_train,
                     epochs=options.num_epochs, validation_data=data_gen_val,
-                    steps_per_epoch=1000,callbacks=callback, validation_steps=10)
-
-loss_history = history.history["val_loss"]
+                    steps_per_epoch=1000,callbacks=callback, validation_steps=100)
+    loss_history = history.history["val_loss"]
 
 import numpy
 numpy_loss_history = numpy.array(loss_history)
