@@ -9,6 +9,7 @@ import time
 import numpy as np
 from optparse import OptionParser
 import pickle
+import os
 
 from keras import backend as K
 from keras.optimizers import Adam, SGD, RMSprop
@@ -50,7 +51,14 @@ parser.add_option("--output_weight_path", dest="output_weight_path", help="Outpu
 parser.add_option("--input_weight_path", dest="input_weight_path", help="Input path for weights. If not specified, will try to load default weights provided by keras.")
 
 (options, args) = parser.parse_args()
-    
+
+# make dirs to save rpn
+# "./models/rpn/rpn"
+if not os.path.isdir("models"):
+	os.path.mkdir("models")
+if not os.path.isdir("models/rpn"):
+	os.path.mkdir("models/rpn")
+
 # we will train from pascal voc 2007
 # you have to pass the directory of VOC with -p
 if not options.train_path:   # if filename is not given
