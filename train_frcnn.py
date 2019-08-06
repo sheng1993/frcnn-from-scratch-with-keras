@@ -6,6 +6,7 @@ import time
 import numpy as np
 from optparse import OptionParser
 import pickle
+import os
 
 from keras import backend as K
 from keras.optimizers import Adam, SGD, RMSprop
@@ -46,6 +47,7 @@ parser.add_option("--rpn", dest="rpn_weight_path", help="Input path for rpn.", d
 parser.add_option("--opt", dest="optimizers", help="set the optimizer to use", default="SGD")
 parser.add_option("--elen", dest="epoch_length", help="set the epoch length. def=1000", default=1000)
 parser.add_option("--load", dest="load", help="What model to load", default=None)
+parser.add_option("--dataset", dest="dataset", help="name of the dataset", default="voc")
 (options, args) = parser.parse_args()
 
 if not options.train_path:   # if filename is not given
@@ -64,7 +66,12 @@ C.use_horizontal_flips = bool(options.horizontal_flips)
 C.use_vertical_flips = bool(options.vertical_flips)
 C.rot_90 = bool(options.rot_90)
 
-C.model_path = options.output_weight_path
+# mkdir to save models.
+if not os.path.isdir("models"):
+  os.mkdir("models")
+if not os.path.isdir("models/"+options.network):
+  os.mkdir(os.path.join("models", options.network))
+C.model_path = os.path.join("models", options.network, options.dataset+".hdf5")
 C.num_rois = int(options.num_rois)
 
 # we will use resnet. may change to others

@@ -55,9 +55,9 @@ parser.add_option("--input_weight_path", dest="input_weight_path", help="Input p
 # make dirs to save rpn
 # "./models/rpn/rpn"
 if not os.path.isdir("models"):
-	os.path.mkdir("models")
+	os.mkdir("models")
 if not os.path.isdir("models/rpn"):
-	os.path.mkdir("models/rpn")
+	os.mkdir("models/rpn")
 
 # we will train from pascal voc 2007
 # you have to pass the directory of VOC with -p
