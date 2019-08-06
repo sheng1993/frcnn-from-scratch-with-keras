@@ -19,7 +19,30 @@ from keras.utils.data_utils import get_file
 from keras import backend as K
 from keras_frcnn.RoiPoolingConv import RoiPoolingConv
 from keras_frcnn.FixedBatchNormalization import FixedBatchNormalization
-from keras.applications import correct_pad
+
+def correct_pad(backend, inputs, kernel_size):
+    """Returns a tuple for zero-padding for 2D convolution with downsampling.
+    # Arguments
+        input_size: An integer or tuple/list of 2 integers.
+        kernel_size: An integer or tuple/list of 2 integers.
+    # Returns
+        A tuple.
+    """
+    img_dim = 2 if backend.image_data_format() == 'channels_first' else 1
+    input_size = backend.int_shape(inputs)[img_dim:(img_dim + 2)]
+
+    if isinstance(kernel_size, int):
+        kernel_size = (kernel_size, kernel_size)
+
+    if input_size[0] is None:
+        adjust = (1, 1)
+    else:
+        adjust = (1 - input_size[0] % 2, 1 - input_size[1] % 2)
+
+    correct = (kernel_size[0] // 2, kernel_size[1] // 2)
+
+    return ((correct[0] - adjust[0], correct[0]),
+            (correct[1] - adjust[1], correct[1]))
 
 def get_weight_path():
     if K.image_dim_ordering() == 'th':
@@ -118,7 +141,7 @@ def nn_base(input_tensor=None, trainable=False):
     x = _inverted_res_block(x, filters=96, alpha=alpha, stride=1,
                             expansion=6, block_id=12)
 
-    x = _inverted_res_block(x, filters=160, alpha=alpha, stride=2,
+    x = _inverted_res_block(x, filters=160, alpha=alpha, stride=1,
                             expansion=6, block_id=13)
     x = _inverted_res_block(x, filters=160, alpha=alpha, stride=1,
                             expansion=6, block_id=14)
@@ -127,7 +150,7 @@ def nn_base(input_tensor=None, trainable=False):
 
     x = _inverted_res_block(x, filters=320, alpha=alpha, stride=1,
                             expansion=6, block_id=16)
-
+    
     return x
 
 def rpn(base_layers, num_anchors):
@@ -171,14 +194,17 @@ def classifier_layers(x, input_shape, trainable=False, alpha=1):
     
     x = _conv_block_td(inputs=x, filters=512, input_shape=input_shape, strides=(1, 1), trainable=trainable)
     
-    x = _inverted_res_block(x, filters=160, alpha=alpha, stride=1,
-                            expansion=6, block_id=17)
-    x = _inverted_res_block(x, filters=160, alpha=alpha, stride=1,
-                            expansion=6, block_id=18)
-    x = _inverted_res_block(x, filters=160, alpha=alpha, stride=1,
-                            expansion=6, block_id=19)
+    #x = _inverted_res_block(x, filters=160, alpha=alpha, stride=1,
+    #                        expansion=6, block_id=17)
+    #x = _inverted_res_block(x, filters=160, alpha=alpha, stride=1,
+    #                        expansion=6, block_id=18)
     
-#    x = identity_block_td(x, 3, [512, 512, 2048], stage=5, block='c', trainable=trainable)
+    """
+    use v1's depthwise conv
+    """
+    x = _depthwise_conv_block_td(x, 512, alpha=1, depth_multiplier=1, block_id=12)
+    x = _depthwise_conv_block_td(x, 1024, alpha=1, depth_multiplier=1, block_id=13)
+    x = _depthwise_conv_block_td(x, 1024, alpha=1, depth_multiplier=1, block_id=14)
     x = TimeDistributed(layers.AveragePooling2D((7, 7)), name='avg_pool')(x)
 
     return x
