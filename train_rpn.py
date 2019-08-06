@@ -225,7 +225,7 @@ vis = True
 
 Callbacks=keras.callbacks.ModelCheckpoint("./models/rpn/rpn."+options.network+".weights.{epoch:02d}-{loss:.2f}.hdf5", monitor='loss', verbose=1, save_best_only=True, save_weights_only=True, mode='auto', period=4)
 callback=[Callbacks]
-if options.parser == 'pascal_voc':
+if len(val_imgs) == 0:
     # assuming you don't have validation data
     history = model_rpn.fit_generator(data_gen_train,
                     epochs=options.num_epochs,steps_per_epoch=1000,callbacks=callback)
