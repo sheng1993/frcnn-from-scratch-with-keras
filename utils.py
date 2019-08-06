@@ -2,7 +2,7 @@ import numpy as np
 from keras_frcnn import roi_helpers
 import cv2
 
-def get_bbox(R, C, model_classifier_only, class_mapping, F, ratio, bbox_threshold = 0.8):
+def get_bbox(R, C, model_classifier, class_mapping, F, ratio, bbox_threshold = 0.8):
 	# convert from (x1,y1,x2,y2) to (x,y,w,h)
 	R[:, 2] -= R[:, 0]
 	R[:, 3] -= R[:, 1]
@@ -25,7 +25,7 @@ def get_bbox(R, C, model_classifier_only, class_mapping, F, ratio, bbox_threshol
 			ROIs_padded[0, curr_shape[1]:, :] = ROIs[0, 0, :]
 			ROIs = ROIs_padded
 
-		[P_cls, P_regr] = model_classifier_only.predict([F, ROIs])
+		[P_cls, P_regr] = model_classifier.predict([F, ROIs])
 
 		for ii in range(P_cls.shape[1]):
 

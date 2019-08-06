@@ -11,16 +11,12 @@ from keras import backend as K
 from keras.layers import Input
 from keras.models import Model
 from keras_frcnn import roi_helpers
-<<<<<<< HEAD
-=======
 from keras_frcnn.pascal_voc import pascal_voc_util
 from keras_frcnn.pascal_voc_parser import get_data
 from keras_frcnn import data_generators
-<<<<<<< HEAD
+
 from utils import get_bbox
-=======
->>>>>>> 7537df208a51905d708cf54403d14bd76017e3a3
->>>>>>> 9c5d2b9fb491886a529ce393d8303083f49ce7fe
+
 
 sys.setrecursionlimit(40000)
 
@@ -78,7 +74,14 @@ C.use_vertical_flips = False
 C.rot_90 = False
 
 img_path = options.test_path
+# Method to transform the coordinates of the bounding box to its original size
+def get_real_coordinates(ratio, x1, y1, x2, y2):
+	real_x1 = int(round(x1 // ratio))
+	real_y1 = int(round(y1 // ratio))
+	real_x2 = int(round(x2 // ratio))
+	real_y2 = int(round(y2 // ratio))
 
+	return (real_x1, real_y1, real_x2 ,real_y2)
 def format_img_size(img, C):
 	""" formats the image size based on config """
 	img_min_side = float(C.im_size)
@@ -165,28 +168,15 @@ else:
   model_rpn.load_weights(options.load, by_name=True)
   model_classifier.load_weights(options.load, by_name=True)
 
-
 model_rpn.compile(optimizer='sgd', loss='mse')
 model_classifier.compile(optimizer='sgd', loss='mse')
 
 all_imgs = []
-<<<<<<< HEAD
 
 classes = {}
 
 bbox_threshold = 0.8
 
-visualise = True
-
-# define detections
-all_boxes = [[[] for _ in range(len(os.listdir(img_path))]
-               for _ in range(20)]
-# define pascal
-
-for idx, img_name in enumerate(sorted(os.listdir(img_path))):
-=======
-classes = {}
-bbox_threshold = 0.8
 visualise = True
 
 # define pascal
@@ -208,7 +198,6 @@ img_pathes = [x["filepath"] for x in val_imgs]
 all_boxes = [[[] for _ in range(len(val_imgs))] for _ in range(20)]
 
 for idx, img_name in enumerate(sorted(img_pathes)):
->>>>>>> 7537df208a51905d708cf54403d14bd76017e3a3
 	if not img_name.lower().endswith(('.bmp', '.jpeg', '.jpg', '.png', '.tif', '.tiff')):
 		continue
 	print(img_name)
@@ -228,13 +217,9 @@ for idx, img_name in enumerate(sorted(img_pathes)):
 	
     # infer roi
 	R = roi_helpers.rpn_to_roi(Y1, Y2, C, K.image_dim_ordering(), overlap_thresh=0.7)
-<<<<<<< HEAD
     # get bbox
-	all_dets, bboxes, probs = get_bbox(R, C, model_classifier, class_mapping, F, ratio, bbox_threshold=0.5)
-    
-=======
-
-	# convert from (x1,y1,x2,y2) to (x,y,w,h)
+#	all_dets, bboxes, probs = get_bbox(R, C, model_classifier, class_mapping, F, ratio, bbox_threshold=0.5)
+    # convert from (x1,y1,x2,y2) to (x,y,w,h)
 	R[:, 2] -= R[:, 0]
 	R[:, 3] -= R[:, 1]
 
@@ -256,13 +241,14 @@ for idx, img_name in enumerate(sorted(img_pathes)):
 			ROIs_padded[0, curr_shape[1]:, :] = ROIs[0, 0, :]
 			ROIs = ROIs_padded
 
-		[P_cls, P_regr] = model_classifier_only.predict([F, ROIs])
+		[P_cls, P_regr] = model_classifier.predict([F, ROIs])
 
 		for ii in range(P_cls.shape[1]):
 
-			if np.max(P_cls[0, ii, :]) < bbox_threshold or np.argmax(P_cls[0, ii, :]) == (P_cls.shape[2] - 1):
+			if np.max(P_cls[0, ii, :]) < bbox_threshold: #or np.argmax(P_cls[0, ii, :]) == (P_cls.shape[2] - 1):
+#				print("no boxes detected")
 				continue
-
+			print(P_cls[0, ii, :])
 			cls_name = class_mapping[np.argmax(P_cls[0, ii, :])]
 
 			if cls_name not in bboxes:
@@ -283,9 +269,7 @@ for idx, img_name in enumerate(sorted(img_pathes)):
 				pass
 			bboxes[cls_name].append([C.rpn_stride*x, C.rpn_stride*y, C.rpn_stride*(x+w), C.rpn_stride*(y+h)])
 			probs[cls_name].append(np.max(P_cls[0, ii, :]))
-
 	all_dets = []
-
 	for key in bboxes:
 		bbox = np.array(bboxes[key])
 
@@ -295,23 +279,12 @@ for idx, img_name in enumerate(sorted(img_pathes)):
 
 			(real_x1, real_y1, real_x2, real_y2) = get_real_coordinates(ratio, x1, y1, x2, y2)
 
-			cv2.rectangle(img,(real_x1, real_y1), (real_x2, real_y2), (int(class_to_color[key][0]), int(class_to_color[key][1]), int(class_to_color[key][2])),2)
-
+#			cv2.rectangle(img,(real_x1, real_y1), (real_x2, real_y2), (int(class_to_color[key][0]), int(class_to_color[key][1]), int(class_to_color[key][2])),2)
 			textLabel = '{}: {}'.format(key,int(100*new_probs[jk]))
 			all_dets.append((key,100*new_probs[jk]))
-<<<<<<< HEAD
-=======
-#            all_boxes
->>>>>>> 7537df208a51905d708cf54403d14bd76017e3a3
-
 			(retval,baseLine) = cv2.getTextSize(textLabel,cv2.FONT_HERSHEY_COMPLEX,1,1)
-			textOrg = (real_x1, real_y1-0)
+#			textOrg = (real_x1, real_y1-0)            
 
-			cv2.rectangle(img, (textOrg[0] - 5, textOrg[1]+baseLine - 5), (textOrg[0]+retval[0] + 5, textOrg[1]-retval[1] - 5), (0, 0, 0), 2)
-			cv2.rectangle(img, (textOrg[0] - 5,textOrg[1]+baseLine - 5), (textOrg[0]+retval[0] + 5, textOrg[1]-retval[1] - 5), (255, 255, 255), -1)
-			cv2.putText(img, textLabel, textOrg, cv2.FONT_HERSHEY_DUPLEX, 1, (0, 0, 0), 1)
-
->>>>>>> 9c5d2b9fb491886a529ce393d8303083f49ce7fe
 	print('Elapsed time = {}'.format(time.time() - st))
 	print("det:", all_dets)
 	print("boxes:", bboxes)
@@ -323,3 +296,5 @@ for idx, img_name in enumerate(sorted(img_pathes)):
            if not os.path.isdir("results"):
               os.mkdir("results")
            cv2.imwrite('./results/{}.png'.format(idx),img)
+
+
