@@ -14,6 +14,12 @@ from keras_frcnn import roi_helpers
 from keras_frcnn.pascal_voc import pascal_voc_util
 from keras_frcnn.pascal_voc_parser import get_data
 from keras_frcnn import data_generators
+<<<<<<< HEAD
+=======
+
+from utils import get_bbox
+
+>>>>>>> b3606914d1cd5001a2a9b0e03d97199bdfa0687a
 
 sys.setrecursionlimit(40000)
 
@@ -71,7 +77,14 @@ C.use_vertical_flips = False
 C.rot_90 = False
 
 img_path = options.test_path
+# Method to transform the coordinates of the bounding box to its original size
+def get_real_coordinates(ratio, x1, y1, x2, y2):
+	real_x1 = int(round(x1 // ratio))
+	real_y1 = int(round(y1 // ratio))
+	real_x2 = int(round(x2 // ratio))
+	real_y2 = int(round(y2 // ratio))
 
+	return (real_x1, real_y1, real_x2 ,real_y2)
 def format_img_size(img, C):
 	""" formats the image size based on config """
 	img_min_side = float(C.im_size)
@@ -105,16 +118,6 @@ def format_img(img, C):
 	img, ratio = format_img_size(img, C)
 	img = format_img_channels(img, C)
 	return img, ratio
-
-# Method to transform the coordinates of the bounding box to its original size
-def get_real_coordinates(ratio, x1, y1, x2, y2):
-
-	real_x1 = int(round(x1 // ratio))
-	real_y1 = int(round(y1 // ratio))
-	real_x2 = int(round(x2 // ratio))
-	real_y2 = int(round(y2 // ratio))
-
-	return (real_x1, real_y1, real_x2 ,real_y2)
 
 class_mapping = C.class_mapping
 
@@ -155,8 +158,7 @@ rpn_layers = nn.rpn(shared_layers, num_anchors)
 classifier = nn.classifier(feature_map_input, roi_input, C.num_rois, nb_classes=len(class_mapping), trainable=True)
 
 model_rpn = Model(img_input, rpn_layers)
-model_classifier_only = Model([feature_map_input, roi_input], classifier)
-
+#model_classifier_only = Model([feature_map_input, roi_input], classifier)
 model_classifier = Model([feature_map_input, roi_input], classifier)
 
 # model loading
@@ -168,7 +170,6 @@ else:
   print('Loading weights from {}'.format(options.load))
   model_rpn.load_weights(options.load, by_name=True)
   model_classifier.load_weights(options.load, by_name=True)
-
 
 model_rpn.compile(optimizer='sgd', loss='mse')
 model_classifier.compile(optimizer='sgd', loss='mse')
@@ -209,6 +210,7 @@ for idx, img_name in enumerate(sorted(img_pathes)):
 	img = cv2.imread(filepath)
 
 	X, ratio = format_img(img, C)
+	img_scaled = (np.transpose(X[0,:,:,:],(1,2,0)) + 127.5).astype('uint8')
 
 	if K.image_dim_ordering() == 'tf':
 		X = np.transpose(X, (0, 2, 3, 1))
@@ -216,10 +218,11 @@ for idx, img_name in enumerate(sorted(img_pathes)):
 	# get the feature maps and output from the RPN
 	[Y1, Y2, F] = model_rpn.predict(X)
 	
-
+    # infer roi
 	R = roi_helpers.rpn_to_roi(Y1, Y2, C, K.image_dim_ordering(), overlap_thresh=0.7)
-
-	# convert from (x1,y1,x2,y2) to (x,y,w,h)
+    # get bbox
+#	all_dets, bboxes, probs = get_bbox(R, C, model_classifier, class_mapping, F, ratio, bbox_threshold=0.5)
+    # convert from (x1,y1,x2,y2) to (x,y,w,h)
 	R[:, 2] -= R[:, 0]
 	R[:, 3] -= R[:, 1]
 
@@ -241,13 +244,14 @@ for idx, img_name in enumerate(sorted(img_pathes)):
 			ROIs_padded[0, curr_shape[1]:, :] = ROIs[0, 0, :]
 			ROIs = ROIs_padded
 
-		[P_cls, P_regr] = model_classifier_only.predict([F, ROIs])
+		[P_cls, P_regr] = model_classifier.predict([F, ROIs])
 
 		for ii in range(P_cls.shape[1]):
 
-			if np.max(P_cls[0, ii, :]) < bbox_threshold or np.argmax(P_cls[0, ii, :]) == (P_cls.shape[2] - 1):
+			if np.max(P_cls[0, ii, :]) < bbox_threshold: #or np.argmax(P_cls[0, ii, :]) == (P_cls.shape[2] - 1):
+#				print("no boxes detected")
 				continue
-
+			print(P_cls[0, ii, :])
 			cls_name = class_mapping[np.argmax(P_cls[0, ii, :])]
 
 			if cls_name not in bboxes:
@@ -268,9 +272,7 @@ for idx, img_name in enumerate(sorted(img_pathes)):
 				pass
 			bboxes[cls_name].append([C.rpn_stride*x, C.rpn_stride*y, C.rpn_stride*(x+w), C.rpn_stride*(y+h)])
 			probs[cls_name].append(np.max(P_cls[0, ii, :]))
-
 	all_dets = []
-
 	for key in bboxes:
 		bbox = np.array(bboxes[key])
 
@@ -280,21 +282,20 @@ for idx, img_name in enumerate(sorted(img_pathes)):
 
 			(real_x1, real_y1, real_x2, real_y2) = get_real_coordinates(ratio, x1, y1, x2, y2)
 
-			cv2.rectangle(img,(real_x1, real_y1), (real_x2, real_y2), (int(class_to_color[key][0]), int(class_to_color[key][1]), int(class_to_color[key][2])),2)
-
+#			cv2.rectangle(img,(real_x1, real_y1), (real_x2, real_y2), (int(class_to_color[key][0]), int(class_to_color[key][1]), int(class_to_color[key][2])),2)
 			textLabel = '{}: {}'.format(key,int(100*new_probs[jk]))
 			all_dets.append((key,100*new_probs[jk]))
+<<<<<<< HEAD
 
+=======
+>>>>>>> b3606914d1cd5001a2a9b0e03d97199bdfa0687a
 			(retval,baseLine) = cv2.getTextSize(textLabel,cv2.FONT_HERSHEY_COMPLEX,1,1)
-			textOrg = (real_x1, real_y1-0)
-
-			cv2.rectangle(img, (textOrg[0] - 5, textOrg[1]+baseLine - 5), (textOrg[0]+retval[0] + 5, textOrg[1]-retval[1] - 5), (0, 0, 0), 2)
-			cv2.rectangle(img, (textOrg[0] - 5,textOrg[1]+baseLine - 5), (textOrg[0]+retval[0] + 5, textOrg[1]-retval[1] - 5), (255, 255, 255), -1)
-			cv2.putText(img, textLabel, textOrg, cv2.FONT_HERSHEY_DUPLEX, 1, (0, 0, 0), 1)
+#			textOrg = (real_x1, real_y1-0)            
 
 	print('Elapsed time = {}'.format(time.time() - st))
-	print(all_dets)
-        # enable if you want to show pics
+	print("det:", all_dets)
+	print("boxes:", bboxes)
+    # enable if you want to show pics
 	#cv2.imshow('img', img)
 	#cv2.waitKey(0)
 	if options.write:
@@ -302,3 +303,5 @@ for idx, img_name in enumerate(sorted(img_pathes)):
            if not os.path.isdir("results"):
               os.mkdir("results")
            cv2.imwrite('./results/{}.png'.format(idx),img)
+
+

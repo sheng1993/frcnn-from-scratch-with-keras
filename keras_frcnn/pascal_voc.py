@@ -15,9 +15,25 @@ class pascal_voc_util(object):
         self._data_path = os.path.join(devkit_path, 'VOC2007')
         self._image_ext = '.jpg'
         self.year = "2007"
+        self._image_index = self._load_image_set_index()
+        
         assert os.path.exists(self._data_path), \
             'Path does not exist: {}'.format(self._data_path)
-        
+    
+    def _load_image_set_index(self):
+        """
+        Load the indexes listed in this dataset's image set file.
+        """
+        # Example path to image set file:
+        # self._devkit_path + /VOCdevkit2007/VOC2007/ImageSets/Main/val.txt
+        image_set_file = os.path.join(self._data_path, 'ImageSets', 'Main',
+                                      "test" + '.txt')
+        assert os.path.exists(image_set_file), \
+            'Path does not exist: {}'.format(image_set_file)
+        with open(image_set_file) as f:
+            image_index = [x.strip() for x in f.readlines()]
+        return image_index
+    
     def _write_voc_results_file(self, all_boxes):
             for cls_ind, cls in enumerate(self.classes):
                 if cls == '__background__':
