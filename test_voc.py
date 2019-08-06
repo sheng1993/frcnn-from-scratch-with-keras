@@ -14,12 +14,8 @@ from keras_frcnn import roi_helpers
 from keras_frcnn.pascal_voc import pascal_voc_util
 from keras_frcnn.pascal_voc_parser import get_data
 from keras_frcnn import data_generators
-<<<<<<< HEAD
-=======
 
 from utils import get_bbox
-
->>>>>>> b3606914d1cd5001a2a9b0e03d97199bdfa0687a
 
 sys.setrecursionlimit(40000)
 
@@ -285,10 +281,6 @@ for idx, img_name in enumerate(sorted(img_pathes)):
 #			cv2.rectangle(img,(real_x1, real_y1), (real_x2, real_y2), (int(class_to_color[key][0]), int(class_to_color[key][1]), int(class_to_color[key][2])),2)
 			textLabel = '{}: {}'.format(key,int(100*new_probs[jk]))
 			all_dets.append((key,100*new_probs[jk]))
-<<<<<<< HEAD
-
-=======
->>>>>>> b3606914d1cd5001a2a9b0e03d97199bdfa0687a
 			(retval,baseLine) = cv2.getTextSize(textLabel,cv2.FONT_HERSHEY_COMPLEX,1,1)
 #			textOrg = (real_x1, real_y1-0)            
 
