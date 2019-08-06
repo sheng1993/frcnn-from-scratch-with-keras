@@ -5,7 +5,7 @@
 
 - **Active support! :)**
 
-- **MobileNet support!**
+- **MobileNetv1 & v2 support!**
 
 - **VGG support!**
 
@@ -16,7 +16,7 @@ PR and issues will help too!
 Thanks :)
 
 ## Compared to the forked keras-frcnn..
-1. mobilenetv1 and mobilenetv2(TBD) support added (partially). Can also try Mobilenetv1_05,Mobilenetv1_25 for smaller nets.
+1. mobilenetv1 and mobilenetv2 supported. Can also try Mobilenetv1_05,Mobilenetv1_25 for smaller nets on the Edge.
 2. VGG19 support added.
 3. RPN can be trained seperately.
 
