@@ -11,6 +11,12 @@ from keras import backend as K
 from keras.layers import Input
 from keras.models import Model
 from keras_frcnn import roi_helpers
+<<<<<<< HEAD
+=======
+from keras_frcnn.pascal_voc import pascal_voc_util
+from keras_frcnn.pascal_voc_parser import get_data
+from keras_frcnn import data_generators
+>>>>>>> 7537df208a51905d708cf54403d14bd76017e3a3
 
 sys.setrecursionlimit(40000)
 
@@ -171,6 +177,7 @@ model_rpn.compile(optimizer='sgd', loss='mse')
 model_classifier.compile(optimizer='sgd', loss='mse')
 
 all_imgs = []
+<<<<<<< HEAD
 
 classes = {}
 
@@ -184,6 +191,32 @@ all_boxes = [[[] for _ in range(len(os.listdir(img_path))]
 # define pascal
 
 for idx, img_name in enumerate(sorted(os.listdir(img_path))):
+=======
+classes = {}
+bbox_threshold = 0.8
+visualise = True
+
+
+# define pascal
+pascal = pascal_voc_util(options.test_path)
+
+# define dataloader
+all_imgs, classes_count, class_mapping = get_data(options.test_path)
+val_imgs = [s for s in all_imgs if s['imageset'] == 'test']
+if len(val_imgs) == 0:
+    print("val images not found. using trainval images for testing.")
+    val_imgs = [s for s in all_imgs if s['imageset'] == 'trainval'] # for test purpose
+    
+print('Num val samples {}'.format(len(val_imgs)))
+data_gen_val = data_generators.get_anchor_gt(val_imgs, classes_count, C, nn.get_img_output_length,K.image_dim_ordering(), mode='val')
+
+img_pathes = [x["filepath"] for x in val_imgs]
+
+# define detections
+all_boxes = [[[] for _ in range(len(val_imgs))] for _ in range(20)]
+
+for idx, img_name in enumerate(sorted(img_pathes)):
+>>>>>>> 7537df208a51905d708cf54403d14bd76017e3a3
 	if not img_name.lower().endswith(('.bmp', '.jpeg', '.jpg', '.png', '.tif', '.tiff')):
 		continue
 	print(img_name)
@@ -268,6 +301,10 @@ for idx, img_name in enumerate(sorted(os.listdir(img_path))):
 
 			textLabel = '{}: {}'.format(key,int(100*new_probs[jk]))
 			all_dets.append((key,100*new_probs[jk]))
+<<<<<<< HEAD
+=======
+#            all_boxes
+>>>>>>> 7537df208a51905d708cf54403d14bd76017e3a3
 
 			(retval,baseLine) = cv2.getTextSize(textLabel,cv2.FONT_HERSHEY_COMPLEX,1,1)
 			textOrg = (real_x1, real_y1-0)
