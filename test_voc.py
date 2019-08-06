@@ -11,12 +11,9 @@ from keras import backend as K
 from keras.layers import Input
 from keras.models import Model
 from keras_frcnn import roi_helpers
-<<<<<<< HEAD
-=======
 from keras_frcnn.pascal_voc import pascal_voc_util
 from keras_frcnn.pascal_voc_parser import get_data
 from keras_frcnn import data_generators
->>>>>>> 7537df208a51905d708cf54403d14bd76017e3a3
 
 sys.setrecursionlimit(40000)
 
@@ -177,25 +174,12 @@ model_rpn.compile(optimizer='sgd', loss='mse')
 model_classifier.compile(optimizer='sgd', loss='mse')
 
 all_imgs = []
-<<<<<<< HEAD
 
 classes = {}
 
 bbox_threshold = 0.8
 
 visualise = True
-
-# define detections
-all_boxes = [[[] for _ in range(len(os.listdir(img_path))]
-               for _ in range(20)]
-# define pascal
-
-for idx, img_name in enumerate(sorted(os.listdir(img_path))):
-=======
-classes = {}
-bbox_threshold = 0.8
-visualise = True
-
 
 # define pascal
 pascal = pascal_voc_util(options.test_path)
@@ -216,7 +200,6 @@ img_pathes = [x["filepath"] for x in val_imgs]
 all_boxes = [[[] for _ in range(len(val_imgs))] for _ in range(20)]
 
 for idx, img_name in enumerate(sorted(img_pathes)):
->>>>>>> 7537df208a51905d708cf54403d14bd76017e3a3
 	if not img_name.lower().endswith(('.bmp', '.jpeg', '.jpg', '.png', '.tif', '.tiff')):
 		continue
 	print(img_name)
@@ -301,10 +284,6 @@ for idx, img_name in enumerate(sorted(img_pathes)):
 
 			textLabel = '{}: {}'.format(key,int(100*new_probs[jk]))
 			all_dets.append((key,100*new_probs[jk]))
-<<<<<<< HEAD
-=======
-#            all_boxes
->>>>>>> 7537df208a51905d708cf54403d14bd76017e3a3
 
 			(retval,baseLine) = cv2.getTextSize(textLabel,cv2.FONT_HERSHEY_COMPLEX,1,1)
 			textOrg = (real_x1, real_y1-0)

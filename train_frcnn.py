@@ -162,11 +162,11 @@ except:
 
 # optimizer setup
 if options.optimizers == "SGD":
-    optimizer = SGD(lr=1e-3, decay=0.0005, momentum=0.9)
+    optimizer = SGD(lr=1e-2, decay=0.0005, momentum=0.9)
     optimizer_classifier = SGD(lr=1e-3, decay=0.0005, momentum=0.9)
 else:
-    optimizer = Adam(lr=1e-5, clipnorm=0.001)
-    optimizer_classifier = Adam(lr=1e-5, clipnorm=0.001)
+    optimizer = Adam(lr=1e-6, clipnorm=0.001)
+    optimizer_classifier = Adam(lr=1e-56, clipnorm=0.001)
 
 # may use this to resume from rpn models or previous training. specify either rpn or frcnn model to load
 if options.load is not None:
