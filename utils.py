@@ -66,13 +66,12 @@ def get_bbox(R, C, model_classifier_only, class_mapping, F, ratio, bbox_threshol
 			textLabel = '{}: {}'.format(key,int(100*new_probs[jk]))
 			all_dets.append((key,100*new_probs[jk]))
 			(retval,baseLine) = cv2.getTextSize(textLabel,cv2.FONT_HERSHEY_COMPLEX,1,1)
-			textOrg = (real_x1, real_y1-0)            
-	return bboxes, probs
+#			textOrg = (real_x1, real_y1-0)            
+	return all_dets, bboxes, probs
 
 
 # Method to transform the coordinates of the bounding box to its original size
 def get_real_coordinates(ratio, x1, y1, x2, y2):
-
 	real_x1 = int(round(x1 // ratio))
 	real_y1 = int(round(y1 // ratio))
 	real_x2 = int(round(x2 // ratio))
