@@ -13,6 +13,14 @@ from keras.models import Model
 from keras_frcnn import roi_helpers
 from keras.applications.mobilenet import preprocess_input
 
+# for GPU settings..
+if 'tensorflow' == K.backend():
+    import tensorflow as tf
+from keras.backend.tensorflow_backend import set_session
+config2 = tf.ConfigProto()
+config2.gpu_options.allow_growth = True
+set_session(tf.Session(config=config2))
+
 sys.setrecursionlimit(40000)
 
 parser = OptionParser()
