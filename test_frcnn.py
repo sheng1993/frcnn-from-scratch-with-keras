@@ -206,7 +206,7 @@ all_imgs = []
 
 classes = {}
 
-bbox_threshold = 0.8
+bbox_threshold = 0.4
 
 visualise = True
 
@@ -277,7 +277,7 @@ for idx, img_name in enumerate(sorted(os.listdir(img_path))):
 		print(len(bboxes[key]))
 		bbox = np.array(bboxes[key])
 
-		new_boxes, new_probs = roi_helpers.non_max_suppression_fast(bbox, np.array(probs[key]), overlapThresh = 0.5)
+		new_boxes, new_probs = roi_helpers.non_max_suppression_fast(bbox, np.array(probs[key]), overlap_thresh = 0.5)
 		for jk in range(new_boxes.shape[0]):
 			(x1,y1,x2,y2) = new_boxes[jk,:]
 			cv2.rectangle(img_scaled,(x1,y1),(x2,y2),class_to_color[key],1)
