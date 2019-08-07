@@ -101,36 +101,12 @@ def format_img_channels(img, C):
 	img = np.expand_dims(img, axis=0)
 	return img
 
-def format_img(img):
-	img_min_side = 600.0
-	(height,width,_) = img.shape
-	
-	if width <= height:
-		f = img_min_side/width
-		new_height = int(f * height)
-		new_width = 600
-	else:
-		f = img_min_side/height
-		new_width = int(f * width)
-		new_height = 600
-	# Zero-center by mean pixel, and preprocess image
-	img = cv2.resize(img,(new_width,new_height),interpolation = cv2.INTER_CUBIC)
-#	x_img = np.transpose(img,(2,0,1)).astype(np.float32)
-	x_img = img[:,:, (2, 1, 0)]  # BGR -> RGB
-	x_img = x_img.astype(np.float32)
-	x_img[:, :, 0] -= C.img_channel_mean[0]
-	x_img[:, :, 1] -= C.img_channel_mean[1]
-	x_img[:, :, 2] -= C.img_channel_mean[2]
-	x_img /= C.img_scaling_factor
+def format_img(img, C):
+	""" formats an image for model prediction based on config """
+	img, ratio = format_img_size(img, C)
+	img = format_img_channels(img, C)
+	return img, ratio
 
-	x_img = np.transpose(x_img, (2, 0, 1))
-	x_img = np.expand_dims(x_img, axis=0)
-	if K.backend == 'tf':
-		x_img = np.transpose(x_img, (0, 2, 3, 1))
-	
-#	img = np.expand_dims(x_img, axis=0)
-#	img -= 127.5
-	return x_img
 
 # Method to transform the coordinates of the bounding box to its original size
 def get_real_coordinates(ratio, x1, y1, x2, y2):
@@ -215,8 +191,8 @@ for idx, img_name in enumerate(sorted(os.listdir(img_path))):
 
 	img = cv2.imread(filepath)
 
-    # preprocess image
-	X = format_img(img)
+        # preprocess image
+	X, ratio = format_img(img, C)
 	img_scaled = (np.transpose(X[0,:,:,:],(1,2,0)) + 127.5).astype('uint8')
 	if K.image_dim_ordering() == 'tf':
 		X = np.transpose(X, (0, 2, 3, 1))
@@ -274,7 +250,8 @@ for idx, img_name in enumerate(sorted(os.listdir(img_path))):
 		new_boxes, new_probs = roi_helpers.non_max_suppression_fast(bbox, np.array(probs[key]), overlapThresh = 0.5)
 		for jk in range(new_boxes.shape[0]):
 			(x1,y1,x2,y2) = new_boxes[jk,:]
-			cv2.rectangle(img_scaled,(x1,y1),(x2,y2),class_to_color[key],1)
+			(real_x1, real_y1, real_x2, real_y2) = get_real_coordinates(ratio, x1, y1, x2, y2)
+			cv2.rectangle(img,(real_x1, real_y1), (real_x2, real_y2), (int(class_to_color[key][0]), int(class_to_color[key][1]), int(class_to_color[key][2])),2)
 
 			textLabel = '{}:{}'.format(key,int(100*new_probs[jk]))
 			if key not in all_dets:
