@@ -49,6 +49,7 @@ parser.add_option("--opt", dest="optimizers", help="set the optimizer to use", d
 parser.add_option("--elen", dest="epoch_length", help="set the epoch length. def=1000", default=1000)
 parser.add_option("--load", dest="load", help="What model to load", default=None)
 parser.add_option("--dataset", dest="dataset", help="name of the dataset", default="voc")
+parser.add_option("--lr", dest="lr", help="learn rate", default=1e-3)
 (options, args) = parser.parse_args()
 
 if not options.train_path:   # if filename is not given
@@ -165,17 +166,19 @@ try:
     print('loading weights from {}'.format(C.base_net_weights))
     model_rpn.load_weights(C.base_net_weights, by_name=True)
     model_classifier.load_weights(C.base_net_weights, by_name=True)
+    print("loaded basenet weights!")
 except:
     print('Could not load pretrained model weights. Weights can be found in the keras application folder \
 		https://github.com/fchollet/keras/tree/master/keras/applications')
 
 # optimizer setup
+lr = float(options.lr)
 if options.optimizers == "SGD":
-    optimizer = SGD(lr=1e-2, decay=0.0005, momentum=0.9)
-    optimizer_classifier = SGD(lr=1e-2, decay=0.0005, momentum=0.9)
+    optimizer = SGD(lr=lr, decay=0.0005, momentum=0.9)
+    optimizer_classifier = SGD(lr=lr, decay=0.0005, momentum=0.9)
 else:
-    optimizer = Adam(lr=1e-6, clipnorm=0.001)
-    optimizer_classifier = Adam(lr=1e-6, clipnorm=0.001)
+    optimizer = Adam(lr=lr)
+    optimizer_classifier = Adam(lr=lr)
 
 # may use this to resume from rpn models or previous training. specify either rpn or frcnn model to load
 if options.load is not None:
@@ -186,7 +189,7 @@ elif options.rpn_weight_path is not None:
     print("loading RPN weights from ", options.rpn_weight_path)
     model_rpn.load_weights(options.rpn_weight_path, by_name=True)
 else:
-    print("no previous model was loaded")
+    print("no previous RPN model was loaded")
 
 # compile the model AFTER loading weights!
 model_rpn.compile(optimizer=optimizer, loss=[losses.rpn_loss_cls(num_anchors), losses.rpn_loss_regr(num_anchors)])
