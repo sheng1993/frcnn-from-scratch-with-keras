@@ -6,6 +6,7 @@ import time
 import numpy as np
 from optparse import OptionParser
 import pickle
+import os
 
 from keras import backend as K
 from keras.optimizers import Adam, SGD, RMSprop
@@ -16,6 +17,7 @@ from keras_frcnn import losses as losses
 import keras_frcnn.roi_helpers as roi_helpers
 from keras.utils import generic_utils
 
+# for GPU settings..
 if 'tensorflow' == K.backend():
     import tensorflow as tf
 from keras.backend.tensorflow_backend import set_session
@@ -46,6 +48,7 @@ parser.add_option("--rpn", dest="rpn_weight_path", help="Input path for rpn.", d
 parser.add_option("--opt", dest="optimizers", help="set the optimizer to use", default="SGD")
 parser.add_option("--elen", dest="epoch_length", help="set the epoch length. def=1000", default=1000)
 parser.add_option("--load", dest="load", help="What model to load", default=None)
+parser.add_option("--dataset", dest="dataset", help="name of the dataset", default="voc")
 (options, args) = parser.parse_args()
 
 if not options.train_path:   # if filename is not given
@@ -64,7 +67,13 @@ C.use_horizontal_flips = bool(options.horizontal_flips)
 C.use_vertical_flips = bool(options.vertical_flips)
 C.rot_90 = bool(options.rot_90)
 
-C.model_path = options.output_weight_path
+# mkdir to save models.
+if not os.path.isdir("models"):
+  os.mkdir("models")
+if not os.path.isdir("models/"+options.network):
+  os.mkdir(os.path.join("models", options.network))
+C.model_path = os.path.join("models", options.network, options.dataset+".hdf5")
+
 C.num_rois = int(options.num_rois)
 
 # we will use resnet. may change to others
@@ -163,10 +172,10 @@ except:
 # optimizer setup
 if options.optimizers == "SGD":
     optimizer = SGD(lr=1e-2, decay=0.0005, momentum=0.9)
-    optimizer_classifier = SGD(lr=1e-3, decay=0.0005, momentum=0.9)
+    optimizer_classifier = SGD(lr=1e-2, decay=0.0005, momentum=0.9)
 else:
     optimizer = Adam(lr=1e-6, clipnorm=0.001)
-    optimizer_classifier = Adam(lr=1e-56, clipnorm=0.001)
+    optimizer_classifier = Adam(lr=1e-6, clipnorm=0.001)
 
 # may use this to resume from rpn models or previous training. specify either rpn or frcnn model to load
 if options.load is not None:
