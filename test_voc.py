@@ -17,7 +17,6 @@ from keras_frcnn import data_generators
 
 from utils import get_bbox
 
-
 sys.setrecursionlimit(40000)
 
 parser = OptionParser()
