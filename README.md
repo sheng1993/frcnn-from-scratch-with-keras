@@ -89,7 +89,12 @@ Epoch 4/20
 ## 4. then train the whole Faster-RCNN network!
 
 ```
+# sample command
 python train_frcnn.py --network vgg16 -o simple -p /path/to/your/dataset/
+
+# sample command to train PASCAL_VOC dataset:
+python train_frcnn.py -p ../VOCdevkit/ --lr 1e-4 --opt SGD --network vgg --elen 1000 --num_epoch 100 --hf 
+# this may take about 12 hours with GPU..
 
 # add --load yourmodelpath if you want to resume training.
 python train_frcnn.py --network vgg16 -o simple -p /path/to/your/dataset/ --load model_frcnn.hdf5
