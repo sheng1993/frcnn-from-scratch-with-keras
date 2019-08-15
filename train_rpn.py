@@ -21,6 +21,8 @@ from keras_frcnn import losses as losses
 import keras_frcnn.roi_helpers as roi_helpers
 from keras.utils import generic_utils
 
+from sklearn.model_selection import train_test_split
+
 # gpu setting
 if 'tensorflow' == K.backend():
     import tensorflow as tf
@@ -153,8 +155,9 @@ random.shuffle(all_imgs)
 num_imgs = len(all_imgs)
 
 # split to train and val
-train_imgs = [s for s in all_imgs if s['imageset'] == 'trainval']
-val_imgs = [s for s in all_imgs if s['imageset'] == 'test']
+train_imgs, val_imgs = train_test_split(all_imgs, test_size=0.2)
+# train_imgs = [s for s in all_imgs if s['imageset'] == 'trainval']
+# val_imgs = [s for s in all_imgs if s['imageset'] == 'test']
 
 print('Num train samples {}'.format(len(train_imgs)))
 print('Num val samples {}'.format(len(val_imgs)))
