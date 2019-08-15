@@ -17,6 +17,8 @@ from keras_frcnn import losses as losses
 import keras_frcnn.roi_helpers as roi_helpers
 from keras.utils import generic_utils
 
+from sklearn.model_selection import train_test_split
+
 if 'tensorflow' == K.backend():
     import tensorflow as tf
 from keras.backend.tensorflow_backend import set_session
@@ -56,6 +58,8 @@ if options.parser == 'pascal_voc':
     from keras_frcnn.pascal_voc_parser import get_data
 elif options.parser == 'simple':
     from keras_frcnn.simple_parser import get_data
+elif options.parser == 'pickle':
+	from keras_frcnn.pickle_parser import get_data
 else:
     raise ValueError("Command line option parser must be one of 'pascal_voc' or 'simple'")
 
@@ -125,8 +129,9 @@ random.shuffle(all_imgs)
 
 num_imgs = len(all_imgs)
 
-train_imgs = [s for s in all_imgs if s['imageset'] == 'trainval']
-val_imgs = [s for s in all_imgs if s['imageset'] == 'test']
+train_imgs, val_imgs = train_test_split(all_imgs, test_size=0.2)
+# train_imgs = [s for s in all_imgs if s['imageset'] == 'trainval']
+# val_imgs = [s for s in all_imgs if s['imageset'] == 'test']
 
 print('Num train samples {}'.format(len(train_imgs)))
 print('Num val samples {}'.format(len(val_imgs)))
