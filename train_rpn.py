@@ -195,7 +195,7 @@ except:
 
 # compile model
 #optimizer = Adam(lr=1e-6, clipnorm=0.001)
-optimizer = SGD(lr=1e-7, momentum=.9)
+optimizer = SGD(lr=1e-8, momentum=.5, decay=5e-5)
 model_rpn.compile(optimizer=optimizer, loss=[losses.rpn_loss_cls(num_anchors), losses.rpn_loss_regr(num_anchors)])
 
 # write training misc here
