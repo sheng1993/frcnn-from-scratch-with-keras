@@ -228,7 +228,7 @@ vis = True
 # X2, Y1, Y2, IouS = roi_helpers.calc_iou(R, img_data, C, class_mapping)
 # this will output the binding box axis. [x1,x2,y1,y2].
 
-Callbacks=keras.callbacks.ModelCheckpoint("./models/rpn/rpn."+options.network+".weights.{epoch:02d}-{loss:.2f}.hdf5", monitor='loss', verbose=1, save_best_only=True, save_weights_only=True, mode='auto', period=4)
+Callbacks=keras.callbacks.ModelCheckpoint("./models/rpn/rpn."+options.network+".weights.{epoch:02d}-{loss:.2f}.hdf5", monitor='loss', verbose=1, save_best_only=True, save_weights_only=True, mode='auto', period=1)
 callback=[Callbacks]
 if len(val_imgs) == 0:
     # assuming you don't have validation data

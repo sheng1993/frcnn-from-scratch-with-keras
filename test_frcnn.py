@@ -240,14 +240,14 @@ for idx, img_name in enumerate(sorted(os.listdir(img_path))):
 			bboxes[cls_name].append([16*x,16*y,16*(x+w),16*(y+h)])
 			probs[cls_name].append(np.max(P_cls[0,ii,:]))
 
-	all_dets = []
+	all_dets = {}
 
 	for key in bboxes:
 		print(key)
 		print(len(bboxes[key]))
 		bbox = np.array(bboxes[key])
 
-		new_boxes, new_probs = roi_helpers.non_max_suppression_fast(bbox, np.array(probs[key]), overlapThresh = 0.5)
+		new_boxes, new_probs = roi_helpers.non_max_suppression_fast(bbox, np.array(probs[key]), overlap_thresh = 0.5)
 		for jk in range(new_boxes.shape[0]):
 			(x1,y1,x2,y2) = new_boxes[jk,:]
 			(real_x1, real_y1, real_x2, real_y2) = get_real_coordinates(ratio, x1, y1, x2, y2)
