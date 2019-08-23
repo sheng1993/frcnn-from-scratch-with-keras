@@ -194,7 +194,8 @@ except:
 		https://github.com/fchollet/keras/tree/master/keras/applications')
 
 # compile model
-optimizer = Adam(lr=1e-6, clipnorm=0.001)
+#optimizer = Adam(lr=1e-6, clipnorm=0.001)
+optimizer = SGD(lr=1e-7, momentum=.9)
 model_rpn.compile(optimizer=optimizer, loss=[losses.rpn_loss_cls(num_anchors), losses.rpn_loss_regr(num_anchors)])
 
 # write training misc here
@@ -238,7 +239,7 @@ if len(val_imgs) == 0:
 else:
     history = model_rpn.fit_generator(data_gen_train,
                     epochs=options.num_epochs, validation_data=data_gen_val,
-                    steps_per_epoch=1000,callbacks=callback, validation_steps=100)
+                    steps_per_epoch=1000,callbacks=callback, validation_steps=100, initial_epoch=5)
     loss_history = history.history["val_loss"]
 
 import numpy
