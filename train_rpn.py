@@ -194,7 +194,7 @@ except:
 		https://github.com/fchollet/keras/tree/master/keras/applications')
 
 # compile model
-optimizer = Adam(lr=1e-5, clipnorm=0.001)
+optimizer = Adam(lr=1e-6, clipnorm=0.001)
 model_rpn.compile(optimizer=optimizer, loss=[losses.rpn_loss_cls(num_anchors), losses.rpn_loss_regr(num_anchors)])
 
 # write training misc here
