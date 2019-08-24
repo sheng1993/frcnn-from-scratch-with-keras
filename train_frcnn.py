@@ -174,7 +174,7 @@ except:
 
 # optimizer setup
 if options.optimizers == "SGD":
-    optimizer = SGD(lr=1e-2, decay=0.0005, momentum=0.9)
+    optimizer = SGD(lr=1e-5, decay=0.0005, momentum=0.9)
     optimizer_classifier = SGD(lr=1e-2, decay=0.0005, momentum=0.9)
 else:
     optimizer = Adam(lr=1e-5, clipnorm=0.001)
